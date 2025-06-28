@@ -166,29 +166,75 @@ else:
         initial_sidebar_state="expanded"
     )
 
-    # Styling
+    # Styling (cleaned up)
     st.markdown("""
     <style>
-        .main {
-            padding: 2rem;
-        }
-        .agent-card {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border-left: 5px solid #ff6b6b;
-        }
-        .stButton button {
-            background-color: #ff6b6b;
-            color: white;
-            border-radius: 5px;
-        }
-        h1, h2, h3 {
-            color: #444;
-        }
+    body {
+        background: linear-gradient(to bottom right, #fff0f6, #ffe0ef);
+    }
+    .main {
+        padding: 2rem;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #c9184a;
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+    .stTextInput > div > input,
+    .stNumberInput input {
+        border: 2px solid #f783ac;
+        border-radius: 8px;
+    }
+    .stButton > button {
+        background-color: #f783ac !important;
+        color: #fff !important;
+        border-radius: 20px;
+        font-weight: bold;
+        border: none;
+    }
+    .stButton > button:hover {
+        background-color: #d6336c !important;
+    }
+    .stTextArea textarea {
+        border: 2px solid #f783ac;
+        border-radius: 8px;
+    }
+    .agent-card {
+        background-color: #ffe0ef;
+        border-left: 5px solid #f783ac;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    /* Prettier checkboxes */
+    label[data-testid="stCheckbox"] > div {
+        background: #ffe0ef;
+        border: 2px solid #f783ac;
+        border-radius: 30px;
+        padding: 0.4em 1em;
+        display: inline-block;
+        cursor: pointer;
+        font-weight: bold;
+        color: #c9184a;
+        transition: all 0.2s ease;
+    }
+    label[data-testid="stCheckbox"] > div:hover {
+        background: #f783ac;
+        color: #fff;
+    }
+    label[data-testid="stCheckbox"] > div input {
+        display: none;
+    }
+    [data-testid="stExpander"] > div {
+        border-left: 5px solid #f783ac;
+        background: #ffe0ef;
+        border-radius: 10px;
+        margin-bottom: 0.8em;
+    }
     </style>
     """, unsafe_allow_html=True)
+    
+
+
 
     # Title and introduction
     st.title("🧬 SHAKTI-AI")
@@ -261,6 +307,15 @@ else:
             placeholder="Example: I’m 8 weeks pregnant and keep feeling dizzy, is this normal?",
             key='query_text'
         )
+        # inputting age
+        age = st.text_input("Your Age (optional)", placeholder="e.g., 25")
+        if age:
+            try:
+                age = int(age)
+            except:
+                st.warning("Please enter age as a number.")
+                age = None
+
 
     # Use spoken_text if available and not empty, otherwise use typed text
     if 'spoken_text' in st.session_state and st.session_state['spoken_text']:
@@ -305,7 +360,7 @@ else:
                     selected_agents = None
                     
                 # Get response from SHAKTI-AI
-                response = ask_shakti_ai(query, selected_agents)
+                response = ask_shakti_ai(query, selected_agents, age)
                 
                 # Display response
                 st.markdown("### Expert Guidance")
@@ -326,6 +381,7 @@ else:
 
     # Footer
     st.markdown("---")
+    st.markdown("✨ *SHAKTI-AI: For every woman, every phase, every fight.* ✨")
     st.markdown(
         "SHAKTI-AI provides general information only and is not a substitute for professional medical, legal, or mental health advice. "
         "Always consult qualified professionals for specific concerns."

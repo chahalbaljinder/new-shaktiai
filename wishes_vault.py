@@ -59,8 +59,6 @@ def show_secure_wishes_vault(neutral_mode=False):
         st.markdown(f"<div style='{box_style}'>", unsafe_allow_html=True)
         st.markdown("#### 🔒 Wishes Vault" if not neutral_mode else "<span style='color:#888;font-size:1.1em;'>🔒 Safe Wishes Box</span>", unsafe_allow_html=True)
         st.caption("Write your wishes, save, and they will stay hidden until released.")
-        st.caption(f"Vault file: {WISHES_FILE}")
-        st.caption(f"Key file: {KEY_FILE}")
 
         enc = _load_encrypted()
         wishes = None

@@ -106,33 +106,40 @@ class ShaktiAI:
             print(f"Error retrieving knowledge for {agent_type}: {e}")
             return "", []
     
-    def get_agent_response(self, agent_type: str, query: str) -> Dict[str, any]:
+    def get_agent_response(self, agent_type: str, query: str, age: Optional[int] = None) -> Dict[str, any]:
         """Get a response from a specific agent with knowledge base integration."""
         agent_info = self.agent_info[agent_type]
         
         # Get relevant knowledge from knowledge base
         knowledge_context, sources = self.get_relevant_knowledge(agent_type, query)
         
-        # Build the prompt
-        prompt = f"""You are {agent_info['name']}, a {agent_info['role']} specializing in {agent_info['expertise'].replace(", ", ", and")}.
-
-A user has asked the following question:
-{query}
-
-"""
         
         # Add knowledge base context if available
+        
+        prompt = f"""You are {agent_info['name']}, a {agent_info['role']} specializing in {agent_info['expertise'].replace(", ", ", and")}. 
+
+        A user has asked the following question:
+        {query}
+
+        """
+
+        if age:
+            prompt += f"""The user is {age} years old. Adapt your tone, level of detail, and examples to be appropriate for this age."""
+
         if knowledge_context:
             prompt += f"""Based on the following information from your knowledge base:
 
-{knowledge_context}
+        {knowledge_context}
 
-"""
-        
+        """
+
         prompt += f"""Please provide a helpful, informative, and compassionate response based on your expertise.
-Focus on providing accurate information while being culturally sensitive and respectful.
-If the question is outside your area of expertise, acknowledge this and provide general guidance.
-Keep your response clear, practical, and empathetic."""
+        Focus on providing accurate information while being culturally sensitive and respectful.
+        If the question is outside your area of expertise, acknowledge this and provide general guidance.
+        Keep your response clear, practical, and empathetic."""
+
+        
+        
         
         # Get response from LLM
         response_text = self.llm._call(prompt)
@@ -146,7 +153,7 @@ Keep your response clear, practical, and empathetic."""
             "has_knowledge_base": bool(knowledge_context)
         }
     
-    def process_query(self, query: str, agent_types: Optional[List[str]] = None) -> str:
+    def process_query(self, query: str, agent_types: Optional[List[str]] = None, age: Optional[int] = None) -> str:
         """Process a query through one or more agents."""
         # Use all agents if none specified
         if not agent_types or len(agent_types) == 0:
@@ -158,7 +165,7 @@ Keep your response clear, practical, and empathetic."""
         
         for agent_type in agent_types:
             if agent_type in self.agent_info:
-                agent_response = self.get_agent_response(agent_type, query)
+                agent_response = self.get_agent_response(agent_type, query, age)
                 responses.append(agent_response)
                 all_sources.extend(agent_response["sources"])
         
@@ -233,7 +240,7 @@ and ensure the response is culturally sensitive and appropriate. Structure the r
             
         return formatted_response
 
-def ask_shakti_ai(query: str, agent_types: List[str] = None) -> str:
+def ask_shakti_ai(query: str, agent_types: List[str] = None, age: Optional[int] = None) -> str:
     """
     Process a query through SHAKTI-AI agents with knowledge base integration.
     
@@ -243,4 +250,4 @@ def ask_shakti_ai(query: str, agent_types: List[str] = None) -> str:
                     Options: "maternal", "reproductive", "mental", "legal", "feminist"
     """
     shakti = ShaktiAI()
-    return shakti.process_query(query, agent_types)
+    return shakti.process_query(query, agent_types, age)
