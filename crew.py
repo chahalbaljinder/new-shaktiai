@@ -116,27 +116,52 @@ class ShaktiAI:
         
         # Add knowledge base context if available
         
-        prompt = f"""You are {agent_info['name']}, a {agent_info['role']} specializing in {agent_info['expertise'].replace(", ", ", and")}. 
+        prompt = f"""
+        You are {agent_info['name']}, a {agent_info['role']} who specializes in {agent_info['expertise'].replace(", ", ", and")}.
+        Your mission is to help Indian women and girls feel seen, supported, and safe — while providing accurate, trustworthy, culturally relevant information.
 
-        A user has asked the following question:
-        {query}
+        A user has asked:
+        "{query}"
+
+        Your style guide:
+        1️⃣ Your reply must feel personal — use simple sentences, warm words, and a conversational tone.
+        2️⃣ Add **micro-questions** or reflection prompts when it helps the user process emotions.
+        3️⃣ Include **mini-scripts** or **real-life examples** if relevant (like what they could say, text, or do).
+        4️⃣ If you use information from the knowledge base, weave it in naturally — don’t just dump it.
+        5️⃣ End with a **gentle sign-off**: permission to come back, seek help, or stay safe.
+        6️⃣ Provide specific rights, legal facts, or medical details only if clearly relevant — keep accuracy but don’t overload.
 
         """
 
         if age:
-            prompt += f"""The user is {age} years old. Adapt your tone, level of detail, and examples to be appropriate for this age."""
+            prompt += f"\nAdapt your tone and examples for a {age}-year-old."
 
         if knowledge_context:
-            prompt += f"""Based on the following information from your knowledge base:
+            prompt += f"""
+        Below is relevant information from your knowledge base.
+        Paraphrase it into your own words — do not just copy-paste.
 
+        ---
         {knowledge_context}
-
+        ---
         """
 
-        prompt += f"""Please provide a helpful, informative, and compassionate response based on your expertise.
-        Focus on providing accurate information while being culturally sensitive and respectful.
-        If the question is outside your area of expertise, acknowledge this and provide general guidance.
-        Keep your response clear, practical, and empathetic."""
+        prompt += """
+        Your answer must be:
+        ✅ Clear and practical.
+        ✅ Emotionally validating.
+        ✅ Culturally sensitive for India.
+        ✅ 100% respectful and non-judgmental.
+        ✅ End with a line reminding them they can check your references.
+
+        If the question is outside your scope, say so politely and suggest where they can go next.
+
+        When you are done, add a short note:
+        📚 "Full source references are provided for transparency."
+
+        Start your response directly — no preamble about being an AI.
+        """
+
 
         
         
@@ -175,25 +200,61 @@ class ShaktiAI:
             formatted_response = f"## {agent_resp['agent_name']}'s Response\n\n{agent_resp['response']}"
             
             # Add detailed sources if available
-            if agent_resp["sources"]:
-                formatted_response += f"\n\n### 📚 Knowledge Base References\n"
-                for i, source in enumerate(agent_resp["sources"], 1):
-                    # Document header with confidence indicator
-                    confidence_emoji = "🎯" if source['confidence'] == 'High' else "📊" if source['confidence'] == 'Medium' else "📋"
-                    formatted_response += f"\n**{confidence_emoji} Reference {i}: {source['document']}**\n"
-                    formatted_response += f"- **Location**: {source['page_reference']}\n"
-                    formatted_response += f"- **Relevance**: {source['relevance_score']:.3f} ({source['confidence']} confidence)\n"
-                    formatted_response += f"- **Content Preview**: {source['preview']}\n"
-                    
-                    # Show extract for high-relevance sources
-                    if source['relevance_score'] > 0.4:
-                        formatted_response += f"\n**📖 Key Extract**:\n"
-                        formatted_response += f"*{source['extract']}*\n"
-                    
-                    # Add word count for context
-                    formatted_response += f"- **Source Details**: {source['word_count']} words, {source['filename']}\n"
-            
-            return formatted_response
+            # Add sources if available
+            if all_sources:
+                formatted_response += f"\n\n## 📚 Sources Used\n"
+
+                # Group all pages per document
+                grouped = {}
+                for src in all_sources:
+                    doc = src['document'].strip()
+                    page_ref = src.get('page_reference', 'Unknown')
+
+                    # Extract page numbers only
+                    nums = []
+                    for p in page_ref.replace('Pages', '').replace('Page', '').split(','):
+                        p = p.strip()
+                        if p.isdigit():
+                            nums.append(int(p))
+                        elif '-' in p:
+                            start, end = p.split('-')
+                            if start.strip().isdigit() and end.strip().isdigit():
+                                nums.extend(range(int(start.strip()), int(end.strip()) + 1))
+
+                    if doc not in grouped:
+                        grouped[doc] = set()
+                    grouped[doc].update(nums)
+
+                # Collapse consecutive numbers nicely
+                def collapse(nums):
+                    nums = sorted(nums)
+                    if not nums:
+                        return ''
+                    ranges = []
+                    start = prev = nums[0]
+                    for n in nums[1:]:
+                        if n == prev + 1:
+                            prev = n
+                        else:
+                            if start == prev:
+                                ranges.append(f"{start}")
+                            else:
+                                ranges.append(f"{start}–{prev}")
+                            start = prev = n
+                    if start == prev:
+                        ranges.append(f"{start}")
+                    else:
+                        ranges.append(f"{start}–{prev}")
+                    return "pp. " + ', '.join(ranges)
+
+                for doc, nums in grouped.items():
+                    if nums:
+                        page_str = collapse(nums)
+                    else:
+                        page_str = "(Page Unknown)"
+                    formatted_response += f"— {doc}, {page_str}\n"
+
+
             
         # Otherwise, synthesize the responses
         synthesis_prompt = f"""The following experts have provided responses to this query:
@@ -218,17 +279,58 @@ and ensure the response is culturally sensitive and appropriate. Structure the r
         formatted_response = "# 🧬 SHAKTI-AI Expert Guidance\n\n"
         formatted_response += synthesis
         
-        # Add sources if available
+        # Add sources if available (group by document and merge page numbers)
         if all_sources:
             formatted_response += f"\n\n## 📚 Sources Referenced\n"
-            unique_sources = {}
-            for source in all_sources:
-                doc_key = f"{source['document']}_{source.get('page_reference', 'Unknown')}"
-                if doc_key not in unique_sources:
-                    unique_sources[doc_key] = source
-            
-            for i, source in enumerate(unique_sources.values(), 1):
-                formatted_response += f"{i}. {source['document']} ({source.get('page_reference', 'Page Unknown')})\n"
+            # Group by document
+            doc_pages = {}
+            for src in all_sources:
+                doc = src['document'].strip()
+                page_ref = src.get('page_reference', 'Unknown')
+                # Extract page numbers
+                nums = []
+                for p in page_ref.replace('Pages', '').replace('Page', '').split(','):
+                    p = p.strip()
+                    if p.isdigit():
+                        nums.append(int(p))
+                    elif '-' in p:
+                        parts = p.split('-')
+                        if len(parts) == 2 and parts[0].strip().isdigit() and parts[1].strip().isdigit():
+                            nums.extend(range(int(parts[0].strip()), int(parts[1].strip()) + 1))
+                if doc not in doc_pages:
+                    doc_pages[doc] = set()
+                doc_pages[doc].update(nums)
+            # Collapse consecutive numbers into ranges
+            def collapse(nums):
+                nums = sorted(nums)
+                if not nums:
+                    return ''
+                ranges = []
+                start = prev = nums[0]
+                for n in nums[1:]:
+                    if n == prev + 1:
+                        prev = n
+                    else:
+                        if start == prev:
+                            ranges.append(f"{start}")
+                        else:
+                            ranges.append(f"{start}-{prev}")
+                        start = prev = n
+                if start == prev:
+                    ranges.append(f"{start}")
+                else:
+                    ranges.append(f"{start}-{prev}")
+                return ', '.join(ranges)
+            for i, (doc, nums) in enumerate(doc_pages.items(), 1):
+                if nums:
+                    page_str = collapse(nums)
+                    if ',' in page_str or '-' in page_str:
+                        page_label = f"Pages {page_str}"
+                    else:
+                        page_label = f"Page {page_str}"
+                else:
+                    page_label = "Page Unknown"
+                formatted_response += f"{i}. {doc} ({page_label})\n"
         
         # Add individual expert responses section
         formatted_response += "\n\n---\n\n## 👥 Individual Expert Responses\n\n"
