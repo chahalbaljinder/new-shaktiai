@@ -9,6 +9,4 @@ pdfplumber
 sentence-transformers
 faiss-cpu
 numpy
-huggingface_hub
-# Additional dependencies for PDF processing and embeddings
-# PyPDF2 for PDF text extraction
+huggingface_hub 
