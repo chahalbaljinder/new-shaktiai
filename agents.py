@@ -9,7 +9,7 @@ llm = GeminiLLM()
 
 # These functions are kept for compatibility but are no longer used in the direct implementation
 def create_maaya_agent():
-    """Create Maaya agent for maternal health."""
+    """Create Maaya agent for maternal health and newborn care."""
     return None
 
 def create_gynika_agent():
@@ -25,5 +25,5 @@ def create_nyaya_agent():
     return None
 
 def create_vaanya_agent():
-    """Create Vaanya agent for feminist education."""
+    """Create Vaanya agent for menopause and hormonal balance."""
     return None

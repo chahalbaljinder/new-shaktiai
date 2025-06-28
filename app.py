@@ -21,7 +21,7 @@ def safe_word_detected():
             return True
     return False
 
-# --- Fake Weather UI (Panic Mode) ---
+
 # --- Fake Weather UI (Panic Mode) ---
 def show_fake_weather():
     st.markdown("""
@@ -197,49 +197,49 @@ else:
     # Sidebar with agent information
     st.sidebar.title("Meet Your AI Support Team")
 
-    with st.sidebar.expander("👶 Maaya - Maternal Health", expanded=False):
+    with st.sidebar.expander("👶 Maaya - For Moms, By Heart", expanded=False):
         st.markdown("""
         **Expertise**: Pregnancy, childbirth, and baby care
         
-        Maaya is like the experienced nurse in your neighborhood, offering practical guidance through your 
-        maternal journey with warmth and evidence-based knowledge.
+        Maaya is your comforting pregnancy guide — here to cut through myths, answer every “is this normal?”, 
+        and keep you calm from bump to baby, with advice that actually makes sense for you.
         """)
 
-    with st.sidebar.expander("🌸 Gynika - Reproductive Health", expanded=False):
+    with st.sidebar.expander("🌸 Gynika - Flow Friend", expanded=False):
         st.markdown("""
         **Expertise**: Menstruation, puberty, and contraception
         
-        Gynika provides judgment-free information about your reproductive health, helping break taboos and 
-        empowering you with accurate knowledge about your body.
+        Gynika is your real talk reproductive guide — ditching the whispers and giving you straight-up truth on 
+        your cycle, contraception, and more.
         """)
 
-    with st.sidebar.expander("🧘‍♀️ Meher - Mental Wellness", expanded=False):
+    with st.sidebar.expander("🧘‍♀️ Meher - Gentle Guide", expanded=False):
         st.markdown("""
         **Expertise**: Emotional support for trauma, anxiety, and abuse
         
-        Meher is your compassionate mental health ally, offering culturally sensitive guidance through 
-        emotional challenges with a blend of modern psychology and holistic approaches.
+        Meher is your gentle guide — here to listen without judging, name what hurts, and remind you you’re never 
+        too much, even on your hardest days.
         """)
 
-    with st.sidebar.expander("⚖️ Nyaya - Legal Rights", expanded=False):
+    with st.sidebar.expander("⚖️ Nyaya - Rights Ally", expanded=False):
         st.markdown("""
         **Expertise**: Indian laws on consent, abortion, and family rights
         
-        Nyaya helps you understand your legal rights and options within the Indian legal system, explaining 
-        complex concepts in straightforward language.
+        Nyaya is your rights ally — here to break down India’s messy laws, decode your choices, and make sure
+        you know exactly what’s yours to fight for.
         """)
 
-    with st.sidebar.expander("💪 Vaanya - Feminist Health", expanded=False):
+    with st.sidebar.expander("💪 Vaanya - Age Rebel", expanded=False):
         st.markdown("""
         **Expertise**: Menopause, hormonal health, and women's empowerment
         
-        Vaanya is your guide through later-life health transitions, combining scientific understanding with 
-        advocacy for women's autonomy and challenging patriarchal medical systems.
+        Vaanya is your health rebel — here to smash taboos, keep you clued up on your body, and
+        remind you that ageing strong is your superpower.
         """)
 
 
     # Main content area
-    st.markdown("### How can we support you today?")
+    st.markdown("### Your space, your questions — we’re listening")
 
     # --- Voice input UI and logic ---
     col_voice, col_text = st.columns([1, 10])
@@ -256,9 +256,9 @@ else:
 
     with col_text:
         query = st.text_area(
-            "Enter your question or concern",
+            "Tell us what’s on your mind…",
             height=150,
-            placeholder="Example: I'm 6 weeks pregnant and experiencing morning sickness. What can I do to manage it?",
+            placeholder="Example: I’m 8 weeks pregnant and keep feeling dizzy, is this normal?",
             key='query_text'
         )
 
@@ -281,7 +281,7 @@ else:
     with col4:
         legal = st.checkbox("Legal Rights", value=False)
     with col5:
-        feminist = st.checkbox("Feminist Health", value=False)
+        feminist = st.checkbox("Hormonal Health", value=False)
 
     # Submit button
     if st.button("Get Guidance"):
