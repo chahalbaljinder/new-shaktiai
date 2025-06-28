@@ -45,7 +45,7 @@ venv.bak/
 # Vector stores and knowledge bases
 agentss/**/vector_store/
 **/vector_store/
-**/knowledge_base/
+# **/knowledge_base/
 
 # IDEs and editors
 .idea/

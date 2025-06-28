@@ -1,0 +1,6 @@
+{
+  "total_chunks": 1985,
+  "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+  "dimension": 384,
+  "index_type": "IndexFlatIP"
+}
