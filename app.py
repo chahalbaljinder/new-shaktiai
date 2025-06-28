@@ -6,9 +6,166 @@ import streamlit as st
 from crew import ask_shakti_ai
 from dotenv import load_dotenv
 import os
+from get_voice_input import get_voice_input
+from streamlit.components.v1 import html
+import random
+from datetime import datetime, timedelta
 
 # Load environment variables
 load_dotenv()
+
+
+# --- Panic button functionality ---# This function provides a panic button to quickly hide the app and show neutral content
+# It also detects safe words in session state to trigger panic mode
+import streamlit as st
+from datetime import datetime, timedelta
+import random
+
+def show_panic_button():
+    if 'panic_mode' not in st.session_state:
+        st.session_state['panic_mode'] = False
+    if 'show_helplines' not in st.session_state:
+        st.session_state['show_helplines'] = False
+
+    # Hide sidebar in panic mode by injecting CSS
+    if st.session_state['panic_mode']:
+        st.markdown("""
+        <style>
+        [data-testid="stSidebar"], .block-container .sidebar-content { display: none !important; }
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        # Sidebar panic button (only when not in panic mode)
+        with st.sidebar:
+            if st.button("🚨 Panic", help="Quickly hide this app and show neutral content"):
+                st.session_state['panic_mode'] = True
+
+    # Safe word detection
+    for v in st.session_state.values():
+        if isinstance(v, str) and "SAFE" in v.upper():
+            st.session_state['panic_mode'] = True
+
+    # PANIC MODE UI
+    if st.session_state['panic_mode']:
+        # Clear other state except toggles
+        for k in list(st.session_state.keys()):
+            if k not in ['panic_mode', 'show_helplines']:
+                del st.session_state[k]
+
+        # --- Fake Weather UI styling ---
+        st.markdown("""
+        <style>
+        .fake-search-bar {background:#f3f3f3;border-radius:8px;padding:0.5em 1em;display:flex;align-items:center;max-width:350px;margin:0 auto 1em auto;border:1px solid #ddd;}
+        .fake-search-bar input {border:none;background:transparent;outline:none;width:100%;font-size:1em;}
+        .weather-main {text-align:center;}
+        .weather-forecast {display:flex;justify-content:center;gap:1.5em;margin-top:1em;}
+        .weather-forecast-day {background:#f8f9fa;border-radius:8px;padding:0.7em 1em;min-width:90px;box-shadow:0 1px 4px #0001;}
+        .aqi-badge {background:#ffe066;color:#444;padding:0.2em 0.7em;border-radius:1em;font-weight:bold;}
+        .travel-ad {background:#fff3cd;color:#856404;padding:0.7em 1em;border-radius:8px;margin:1em auto;max-width:400px;text-align:center;font-size:1.1em;box-shadow:0 2px 8px #0001;}
+        .helpline-item {margin-bottom:0.5em;display:flex;align-items:center;}
+        </style>
+        """, unsafe_allow_html=True)
+
+        # Fake search bar
+        st.markdown("""
+        <div class='fake-search-bar'>
+            <span style='color:#888;margin-right:0.5em;'>🔍</span>
+            <input type='text' value='Search City' disabled style='color:#aaa;'>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Weather content
+        now = datetime.now()
+        temp = random.randint(24, 36)
+        humidity = random.randint(40, 80)
+        wind = random.randint(5, 20)
+        aqi = random.randint(40, 120)
+        conditions = [
+            ("Sunny", "☀️"),
+            ("Partly Cloudy", "⛅"),
+            ("Light Rain", "🌦️"),
+            ("Thunderstorm", "⛈️"),
+            ("Cloudy", "☁️"),
+            ("Drizzle", "🌧️"),
+        ]
+        today_cond, today_emoji = random.choice(conditions)
+        city = random.choice(["New Delhi", "Mumbai", "Bangalore", "Chennai", "Kolkata", "Pune"])
+
+        st.markdown(f"""
+        <div class='weather-main'>
+            <div style='font-size:1.2em;color:#666;'>{city}, India</div>
+            <div style='color:#888;font-size:1em;'>{now.strftime('%A, %d %B %Y')}</div>
+            <div style='font-size:3em;margin:0.2em 0;'>{today_emoji} {temp}°C</div>
+            <div style='font-size:1.2em;color:#666;'>{today_cond}</div>
+            <div style='color:#888;'>Humidity: {humidity}% &nbsp;|&nbsp; Wind: {wind} km/h &nbsp;|&nbsp; AQI: <span class='aqi-badge'>{aqi}</span></div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Forecast
+        forecast = [
+            (random.randint(25, 35), random.randint(20, 28), *random.choice(conditions)),
+            (random.randint(25, 35), random.randint(20, 28), *random.choice(conditions)),
+            (random.randint(25, 35), random.randint(20, 28), *random.choice(conditions)),
+        ]
+        st.markdown("<div class='weather-forecast'>" +
+            "".join([
+                f"<div class='weather-forecast-day'><div style='font-weight:bold;'>{(now + timedelta(days=i)).strftime('%a')}</div>"
+                f"<div style='font-size:1.5em;'>{emoji}</div>"
+                f"<div style='color:#666;'>{cond}</div>"
+                f"<div style='color:#888;'>{hi}°C / {lo}°C</div></div>"
+                for i, (hi, lo, cond, emoji) in enumerate(forecast, 1)
+            ]) + "</div>", unsafe_allow_html=True)
+
+        # Travel ad
+        ad_text = random.choice([
+            "✈️ Summer Sale: Flights to Goa from ₹1999!",
+            "🏖️ Beach Resort Deals: Save up to 40% this weekend!",
+            "🚆 IRCTC: Book your monsoon train tickets now!",
+            "🛒 Amazon Monsoon Sale: Up to 60% off on electronics!",
+            "🍲 Zomato: Flat 50% off on your first order!",
+        ])
+        st.markdown(f"<div class='travel-ad'>{ad_text}</div>", unsafe_allow_html=True)
+
+        # Travel Advisory + Helplines
+        if st.button("🗺️ Travel Advisory"):
+            st.session_state['show_helplines'] = not st.session_state['show_helplines']
+
+        if st.session_state['show_helplines']:
+            st.info("Stay safe during monsoon — here’s some emergency contacts:")
+            helplines = [
+                ("Women Helpline", "1091"),
+                ("Mental Health Helpline", "7827170170"),
+                ("Police", "100"),
+                ("Child Helpline", "1098"),
+            ]
+            for label, number in helplines:
+                wa_msg = "Hello, I need help urgently. Please assist."
+                wa_url = f"https://wa.me/91{number}?text={wa_msg.replace(' ', '%20')}"
+                col1, col2, col3 = st.columns([4,1,1])
+                with col1:
+                    st.write(f"**{label}:** {number}")
+                with col2:
+                    if st.button(f"📋 Copy", key=f"copy_{number}"):
+                        st.experimental_copy(number)
+                with col3:
+                    st.markdown(f"[📲 WhatsApp]({wa_url})", unsafe_allow_html=True)
+
+            if st.button("❌ Close Helplines"):
+                st.session_state['show_helplines'] = False
+
+        # SAFELY exit panic mode
+        if st.button("🔄 Refresh Weather Feed"):
+            st.session_state['panic_mode'] = False
+            st.session_state['show_helplines'] = False
+
+        st.stop()
+
+show_panic_button()
+
+
+
+# ------------------------------------------------------------------
+
 
 # Page configuration
 st.set_page_config(
@@ -92,12 +249,36 @@ with st.sidebar.expander("💪 Vaanya - Feminist Health", expanded=False):
 # Main content area
 st.markdown("### How can we support you today?")
 
-# Input area
-query = st.text_area(
-    "Enter your question or concern",
-    height=150,
-    placeholder="Example: I'm 6 weeks pregnant and experiencing morning sickness. What can I do to manage it?"
-)
+
+
+
+
+# --- Voice input UI and logic ---
+col_voice, col_text = st.columns([1, 10])
+with col_voice:
+    if st.button('🎤', help='Click to speak (offline voice input)'):
+        spoken_text = get_voice_input()
+        st.session_state['spoken_text'] = spoken_text
+        if spoken_text:
+            # Set the text area value to spoken_text so it is used as input
+            st.session_state['query_text'] = spoken_text
+            st.success(f"You said: {spoken_text}")
+        else:
+            st.warning("No speech detected or could not understand audio.")
+
+with col_text:
+    query = st.text_area(
+        "Enter your question or concern",
+        height=150,
+        placeholder="Example: I'm 6 weeks pregnant and experiencing morning sickness. What can I do to manage it?",
+        key='query_text'
+    )
+
+# Use spoken_text if available and not empty, otherwise use typed text
+if 'spoken_text' in st.session_state and st.session_state['spoken_text']:
+    query = st.session_state['spoken_text']
+else:
+    query = st.session_state.get('query_text', '')
 
 # Agent selection
 st.markdown("### Which experts would you like to consult? (Optional)")
