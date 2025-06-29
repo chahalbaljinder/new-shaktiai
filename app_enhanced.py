@@ -6,7 +6,7 @@ import streamlit as st
 from crew import ask_shakti_ai
 from dotenv import load_dotenv
 import os
-from get_voice_input import get_voice_input, get_voice_input_interactive
+from get_voice_input import get_voice_input
 from streamlit.components.v1 import html
 import random
 from datetime import datetime, timedelta
@@ -257,119 +257,52 @@ with st.sidebar.expander("💪 Vaanya - Age Rebel", expanded=False):
     remind you that ageing strong is your superpower.
     """)
 
-# Add wishes vault to sidebar
-st.sidebar.markdown("---")
-with st.sidebar.expander("🔐 Secure Wishes Vault", expanded=False):
-    st.markdown("*Your private space for sensitive notes and wishes*")
-    show_secure_wishes_vault()
-
 # Main content area
 st.markdown("### Your space, your questions — we're listening")
 
-# --- Enhanced Interactive Voice Input UI ---
+# --- Enhanced Voice Input UI ---
 st.markdown("#### 🎤 Voice Input")
 
 col_voice, col_status = st.columns([2, 8])
 
 with col_voice:
-    # Voice input button logic
-    voice_button_clicked = False
+    # Enhanced microphone button with icon and text
+    voice_button_clicked = st.button(
+        '🎤 Speak Now', 
+        help='Click to start voice input with medical term recognition',
+        use_container_width=True,
+        key="voice_input_btn"
+    )
     
-    if st.session_state.get('voice_active', False):
-        if st.button('⏹️ Stop Listening', key="stop_voice_btn", use_container_width=True):
-            st.session_state['voice_active'] = False
-            st.rerun()
-    else:
-        voice_button_clicked = st.button(
-            '🎤 Start Voice Input', 
-            help='Click to start voice input with medical term recognition',
-            use_container_width=True,
-            key="voice_input_btn"
-        )
+    if voice_button_clicked:
+        with st.spinner('🎧 Listening... Please speak clearly about your health concerns'):
+            spoken_text = get_voice_input()
+            st.session_state['spoken_text'] = spoken_text
+            
+            if spoken_text:
+                st.session_state['query_text'] = spoken_text
+                st.success(f"✅ Recognized: \"{spoken_text}\"")
+                st.balloons()
+            else:
+                st.warning("⚠️ No speech detected. Please try again and speak clearly.")
 
 with col_status:
-    # Voice input status display
-    if st.session_state.get('voice_active', False):
-        st.info("🎙️ **LISTENING...** Speak naturally about your health concerns")
-    elif st.session_state.get('current_transcript', ''):
-        display_text = st.session_state['current_transcript']
+    # Show current voice input status
+    if 'spoken_text' in st.session_state and st.session_state['spoken_text']:
+        display_text = st.session_state['spoken_text']
         if len(display_text) > 100:
             display_text = display_text[:100] + "..."
-        st.success(f"✅ **Voice Input Ready:** \"{display_text}\"")
+        st.info(f"🗣️ Voice input ready: \"{display_text}\"")
 
-# Handle voice input
-if voice_button_clicked and not st.session_state.get('voice_active', False):
-    st.session_state['voice_active'] = True
-    st.session_state['current_transcript'] = ""
-    st.rerun()
-
-# Voice input processing (when active)
-if st.session_state.get('voice_active', False):
-    # Show that we're listening
-    st.info("🎙️ **LISTENING...** Speak clearly about your health concerns")
-    
-    # Use interactive voice input for real-time transcription
-    with st.spinner('🎧 Processing voice input...'):
-        try:
-            # Use the interactive voice input function
-            spoken_text = get_voice_input_interactive()
-            if spoken_text and spoken_text.strip():
-                st.session_state['current_transcript'] = spoken_text
-                st.session_state['query_text'] = spoken_text
-                st.session_state['voice_active'] = False
-                st.session_state['auto_submit'] = True
-                st.success(f"✅ Voice input complete: \"{spoken_text}\"")
-                st.balloons()
-                st.rerun()
-            else:
-                st.session_state['voice_active'] = False
-                st.warning("⚠️ No speech detected. Please try again.")
-                st.rerun()
-        except Exception as e:
-            st.session_state['voice_active'] = False
-            st.error(f"❌ Voice input error: {str(e)}")
-            st.rerun()
-
-# Auto-submit when voice input is complete
-if st.session_state.get('auto_submit', False):
-    st.session_state['auto_submit'] = False
-    final_query = st.session_state.get('current_transcript', '')
-    if final_query:
-        st.session_state['query_text'] = final_query
-        st.success("🎯 Voice input complete! Processing your query...")
-        st.balloons()
-        # Auto-trigger the AI response
-        st.session_state['auto_process'] = True
-        st.rerun()
-
-# --- Text Input with Voice Integration ---
+# --- Text Input ---
 st.markdown("#### ✍️ Text Input")
-
-# Create a placeholder for real-time updates
-text_placeholder = st.empty()
-
-# Update text area value from voice input
-current_text = st.session_state.get('current_transcript', '') or st.session_state.get('query_text', '')
-
-# If voice is active, show live transcript
-if st.session_state.get('voice_active', False):
-    live_text = st.session_state.get('current_transcript', '')
-    query = text_placeholder.text_area(
-        "Tell us what's on your mind… (🎙️ Live Voice Input)",
-        height=150,
-        value=live_text,
-        key=f'query_text_area_live_{len(live_text)}',  # Unique key for updates
-        help="Voice input is being transcribed here in real-time!"
-    )
-else:
-    query = text_placeholder.text_area(
-        "Tell us what's on your mind…",
-        height=150,
-        placeholder="Example: I'm 8 weeks pregnant and keep feeling dizzy, is this normal?",
-        value=current_text,
-        key='query_text_area',
-        help="You can type here or use voice input above. Voice input will appear here in real-time."
-    )
+query = st.text_area(
+    "Tell us what's on your mind…",
+    height=150,
+    placeholder="Example: I'm 8 weeks pregnant and keep feeling dizzy, is this normal?",
+    key='query_text',
+    help="You can type here or use voice input above"
+)
 
 # Age input
 age = st.text_input("Your Age (optional)", placeholder="e.g., 25")
@@ -380,8 +313,11 @@ if age:
         st.warning("Please enter age as a number.")
         age = None
 
-# Get the final query text (from voice or manual input)
-final_query_text = query or st.session_state.get('current_transcript', '')
+# Use spoken_text if available, otherwise use typed text
+if 'spoken_text' in st.session_state and st.session_state['spoken_text']:
+    query = st.session_state['spoken_text']
+else:
+    query = st.session_state.get('query_text', '')
 
 # Agent selection
 st.markdown("### Which experts would you like to consult? (Optional)")
@@ -398,16 +334,9 @@ with col4:
 with col5:
     feminist = st.checkbox("Hormonal Health", value=False)
 
-# Submit button and auto-processing
-if st.button("Get Guidance", use_container_width=True) or st.session_state.get('auto_process', False):
-    # Reset auto_process flag
-    if st.session_state.get('auto_process', False):
-        st.session_state['auto_process'] = False
-    
-    # Use the final query from voice or text input
-    final_query = final_query_text
-    
-    if final_query:
+# Submit button
+if st.button("Get Guidance", use_container_width=True):
+    if query:
         with st.spinner("Consulting with SHAKTI-AI experts..."):
             # Determine which agents to use based on checkboxes
             selected_agents = []
@@ -427,7 +356,7 @@ if st.button("Get Guidance", use_container_width=True) or st.session_state.get('
                 selected_agents = None
                 
             # Get response from SHAKTI-AI
-            response = ask_shakti_ai(final_query, selected_agents, age)
+            response = ask_shakti_ai(query, selected_agents, age)
             
             # Display response
             st.markdown("### Expert Guidance")
@@ -444,6 +373,10 @@ if st.button("Get Guidance", use_container_width=True) or st.session_state.get('
                     st.info("We'll work on improving our responses. Thank you for letting us know.")
     else:
         st.error("Please enter a question or concern.")
+
+# Enhanced Wishes Vault
+st.markdown("---")
+show_secure_wishes_vault()
 
 # Footer
 st.markdown("---")

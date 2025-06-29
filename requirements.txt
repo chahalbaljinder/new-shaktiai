@@ -6,7 +6,14 @@ google-generativeai
 pydantic
 PyPDF2
 pdfplumber
+PyMuPDF
 sentence-transformers
 faiss-cpu
 numpy
-huggingface_hub 
+huggingface_hub
+speech_recognition
+pocketsphinx
+pyaudio
+pywhatkit
+phonenumbers
+yagmail 
