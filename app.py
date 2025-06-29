@@ -526,21 +526,90 @@ def show_fake_weather():
             ("Police", "100"),
             ("Child Helpline", "1098"),
         ]
-        
+
+        # Add custom JS for copy-to-clipboard
+        st.markdown("""
+        <script>
+        function copyToClipboard(text, el) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+            } else {
+                var tempInput = document.createElement('input');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+            }
+            // Show a quick visual feedback
+            if (el) {
+                el.classList.add('copied');
+                setTimeout(function() { el.classList.remove('copied'); }, 700);
+            }
+        }
+        </script>
+        <style>
+        .copy-icon {
+            cursor: pointer;
+            margin-left: 0.5em;
+            font-size: 1.2em;
+            transition: color 0.2s;
+        }
+        .copy-icon:hover {
+            color: #ffeaa7;
+        }
+        .copy-icon.copied {
+            color: #00b894 !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
         col1, col2 = st.columns(2)
+        copy_icon_js = """
+        <script>
+        function copyToClipboard(text, el) {
+            if (window.parent !== window && window.parent.navigator && window.parent.navigator.clipboard) {
+                window.parent.navigator.clipboard.writeText(text);
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+            } else {
+                var tempInput = document.createElement('input');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+            }
+            if (el) {
+                el.classList.add('copied');
+                setTimeout(function() { el.classList.remove('copied'); }, 700);
+            }
+        }
+        function attachCopyListeners() {
+            var icons = document.querySelectorAll('.copy-icon');
+            icons.forEach(function(icon) {
+                icon.onclick = function() {
+                    copyToClipboard(icon.getAttribute('data-number'), icon);
+                };
+            });
+        }
+        // Try to attach listeners immediately and after a delay (for Streamlit reloads)
+        attachCopyListeners();
+        setTimeout(attachCopyListeners, 1000);
+        </script>
+        """
         for i, (label, number) in enumerate(helplines):
-            wa_msg = "Hello, I need help urgently. Please assist."
-            wa_url = f"https://wa.me/91{number}?text={wa_msg.replace(' ', '%20')}"
-            
             with col1 if i % 2 == 0 else col2:
+                unique_id = f"copy_{label.replace(' ', '_').lower()}_{number}"
                 st.markdown(f"""
                 <div class='emergency-card'>
                     <div style='font-weight:bold;'>{label}</div>
-                    <div style='font-size:1.1em;'>{number} 
-                        <a href='{wa_url}' style='margin-left:0.5em;text-decoration:none;'>📲</a>
+                    <div style='font-size:1.1em;'>{number}
+                        <span id='{unique_id}' class='copy-icon' title='Copy number' data-number='{number}'>📋</span>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+        st.markdown(copy_icon_js, unsafe_allow_html=True)
 
         if st.button("❌ Close Helplines"):
             st.session_state['show_helplines'] = False
