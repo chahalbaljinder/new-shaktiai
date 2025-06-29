@@ -129,16 +129,26 @@ def show_secure_wishes_vault(neutral_mode=False):
         if 'show_wishes_form' not in st.session_state:
             st.session_state['show_wishes_form'] = current_wish is None
         
-        if 'wishes_input' not in st.session_state:
-            st.session_state['wishes_input'] = current_wish['content'] if current_wish else ""
-        if 'contact_name' not in st.session_state:
-            st.session_state['contact_name'] = current_wish['contact_name'] if current_wish else ""
-        if 'contact_email' not in st.session_state:
-            st.session_state['contact_email'] = current_wish['contact_email'] if current_wish else ""
-        if 'contact_phone' not in st.session_state:
-            st.session_state['contact_phone'] = current_wish['contact_phone'] if current_wish else ""
-        if 'contact_relationship' not in st.session_state:
-            st.session_state['contact_relationship'] = current_wish['contact_relationship'] if current_wish else ""
+        # Initialize or refresh form fields with current wish data
+        if current_wish:
+            # Always update session state with current wish data when available
+            st.session_state['wishes_input'] = current_wish['content'] or ""
+            st.session_state['contact_name'] = current_wish['contact_name'] or ""
+            st.session_state['contact_email'] = current_wish['contact_email'] or ""
+            st.session_state['contact_phone'] = current_wish['contact_phone'] or ""
+            st.session_state['contact_relationship'] = current_wish['contact_relationship'] or ""
+        else:
+            # Initialize with empty values if no current wish
+            if 'wishes_input' not in st.session_state:
+                st.session_state['wishes_input'] = ""
+            if 'contact_name' not in st.session_state:
+                st.session_state['contact_name'] = ""
+            if 'contact_email' not in st.session_state:
+                st.session_state['contact_email'] = ""
+            if 'contact_phone' not in st.session_state:
+                st.session_state['contact_phone'] = ""
+            if 'contact_relationship' not in st.session_state:
+                st.session_state['contact_relationship'] = ""
 
         show_form = st.session_state.get('show_wishes_form', False)
         

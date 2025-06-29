@@ -11,7 +11,7 @@ sentence-transformers
 faiss-cpu
 numpy
 huggingface_hub
-speech_recognition
+SpeechRecognition
 pocketsphinx
 pyaudio
 pywhatkit
