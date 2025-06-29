@@ -503,7 +503,7 @@ def show_fake_weather():
     
     
     # Emergency services buttons
-    col1, col2 = st.columns([3, 1])
+    col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("🆘 Emergency Services", use_container_width=True):
             st.session_state['show_helplines'] = not st.session_state.get('show_helplines', False)
