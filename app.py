@@ -376,12 +376,14 @@ def show_fake_weather():
     """, unsafe_allow_html=True)
     
     
+
     import requests
     from datetime import datetime, timedelta
-    city_name = "New Delhi"
-    API_KEY = 'aeb88e64cde7325df7186b541539cd42'
-    url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={API_KEY}&units=metric"
-    try:
+    @st.cache_data(ttl=60, show_spinner=False)
+    def get_weather_and_forecast():
+        city_name = "New Delhi"
+        API_KEY = 'aeb88e64cde7325df7186b541539cd42'
+        url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={API_KEY}&units=metric"
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
@@ -397,7 +399,6 @@ def show_fake_weather():
             dt = datetime.fromtimestamp(data['dt'])
             sunrise = datetime.fromtimestamp(data['sys']['sunrise']).strftime('%I:%M %p')
             sunset = datetime.fromtimestamp(data['sys']['sunset']).strftime('%I:%M %p')
-
             # Try to get 7-day forecast (OpenWeatherMap free API does not support this endpoint, so fallback to mock data)
             forecast_data = []
             try:
@@ -445,6 +446,29 @@ def show_fake_weather():
                         'min': temperature-2,
                         'max': temperature+2
                     })
+            return dict(
+                main=main, wind=wind, weather=weather, temperature=temperature, humidity=humidity, wind_speed=wind_speed,
+                description=description, icon=icon, city=city, dt=dt, sunrise=sunrise, sunset=sunset, forecast_data=forecast_data
+            )
+        else:
+            return None
+
+    try:
+        weather = get_weather_and_forecast()
+        if weather:
+            main = weather['main']
+            wind = weather['wind']
+            weather_obj = weather['weather']
+            temperature = weather['temperature']
+            humidity = weather['humidity']
+            wind_speed = weather['wind_speed']
+            description = weather['description']
+            icon = weather['icon']
+            city = weather['city']
+            dt = weather['dt']
+            sunrise = weather['sunrise']
+            sunset = weather['sunset']
+            forecast_data = weather['forecast_data']
 
             # --- UI ---
             st.markdown(f'''
@@ -548,9 +572,11 @@ if st.session_state.get('panic_mode', False):
     for k in list(st.session_state.keys()):
         if k not in preserve_keys:
             del st.session_state[k]
-    
-    show_fake_weather()
-    
+
+    # Show spinner while weather UI loads
+    with st.spinner('Loading neutral weather view...'):
+        show_fake_weather()
+
     if safe_word_detected():
         show_secure_wishes_vault(neutral_mode=True)
     st.stop()
