@@ -16,4 +16,5 @@ pocketsphinx
 pyaudio
 pywhatkit
 phonenumbers
-yagmail 
+yagmail
+psycopg2-binary 
