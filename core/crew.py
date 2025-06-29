@@ -3,7 +3,7 @@ Direct approach for SHAKTI-AI system with PDF knowledge base integration.
 """
 
 from typing import Dict, List, Optional
-from llm import GeminiLLM
+from core.llm import GeminiLLM
 from knowledge_base.retriever import KnowledgeRetriever
 
 class ShaktiAI:

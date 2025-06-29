@@ -1,125 +1,309 @@
-# SHAKTI-AI: Reproductive & Legal Health AI Agents
+# 🌟 SHAKTI-AI: Advanced Emotional Support & Wellness Companion
 
-SHAKTI-AI is a suite of AI-powered agents designed to support Indian women and families with reproductive health, legal rights, mental wellness, and more. Each agent is tailored for a specific domain, providing empathetic, evidence-based, and culturally relevant guidance with **enhanced PDF reference citations**.
+> **A comprehensive AI-powered wellness platform with weather alerts, wishes vault, and intelligent emotional support**
 
-## ✨ New Features
-- **🎯 Enhanced PDF References**: Exact page citations with confidence scores
-- **📚 Advanced Knowledge Base**: PyMuPDF-powered PDF processing with metadata
-- **🔍 Smart Source Citations**: Detailed extracts and content previews
-- **📊 Confidence Indicators**: High/Medium/Low reliability scoring
-- **📄 Page-Level Tracking**: Precise page number references for all sources
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.0%2B-red.svg)](https://streamlit.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12%2B-blue.svg)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## 🤖 AI Agents
-- **Maaya**: Maternal health nurse for pregnancy, childbirth, and baby care
-- **Gynika**: Reproductive health advisor for periods, puberty, and contraception
-- **Meher**: Emotional support counselor for trauma, anxiety, and abuse
-- **Nyaya**: Legal-ethical guide for Indian laws on consent, abortion, and family rights
-- **Vaanya**: Feminist educator for menopause and hormonal health
+## 🎯 Overview
 
-## 📚 Enhanced Knowledge Base System
+SHAKTI-AI is an advanced emotional support and wellness companion that combines AI-powered conversations, weather-based panic mode, secure wishes management, and comprehensive wellness resources. Built with modern technologies including PostgreSQL database integration and voice interaction capabilities.
 
-Each agent utilizes a sophisticated PDF-based knowledge base that provides:
+## ✨ Key Features
 
-### Advanced Reference Features
-- **Exact Page Citations**: "Page 12" or "Pages 15-17" references
-- **Document Metadata**: Full titles, authors, and creation dates
-- **Confidence Scoring**: 🎯 High (>80%), 📊 Medium (50-80%), 📋 Low (<50%)
-- **Content Previews**: 200-character source previews
-- **Detailed Extracts**: 500-character key extracts for high-relevance sources
-- **Source Verification**: Direct document and filename references
+### 🧠 **AI-Powered Emotional Support**
+- Multi-agent AI system with specialized companions (Gynika, Maaya, Meher, Nyaya, Vaanya)
+- Context-aware conversations with memory retention
+- Personalized responses based on user interaction history
+- Voice input and interactive communication
 
-### Knowledge Processing Pipeline
-1. **Enhanced PDF Extraction**: PyMuPDF for better text and metadata extraction
-2. **Smart Chunking**: Context-preserving text segmentation
-3. **Page Tracking**: Maintain page boundaries throughout processing
-4. **Vector Embeddings**: Sentence transformer-based similarity matching
-5. **Citation Generation**: Structured reference formatting with confidence scores
+### 🌦️ **Weather-Based Panic Mode**
+- Real-time weather monitoring and alerts
+- Emergency contact integration during severe weather
+- Air quality monitoring and health recommendations
+- Compact, mobile-friendly weather dashboard
 
-### Setting Up Knowledge Bases
+### 🔒 **Secure Wishes Vault**
+- PostgreSQL-backed encrypted storage
+- Contact management for trusted individuals
+- Email and WhatsApp sharing capabilities
+- Sharing history and preferences tracking
+- Military-grade encryption (Fernet)
 
-1. **Add PDF Documents**: Place relevant PDF files in agent directories:
-   ```
-   knowledge_base/raw_pdfs/maaya/     # Maternal health documents
-   knowledge_base/raw_pdfs/gynika/    # Reproductive health documents  
-   knowledge_base/raw_pdfs/meher/     # Mental health documents
-   knowledge_base/raw_pdfs/nyaya/     # Legal documents
-   knowledge_base/raw_pdfs/vaanya/    # Feminist health documents
-   ```
+### 📚 **Knowledge Base Integration**
+- Comprehensive wellness and mental health resources
+- PDF document processing and vector search
+- RAG (Retrieval Augmented Generation) capabilities
+- Specialized knowledge bases for different AI companions
 
-2. **Process Documents**: Run the interactive setup script:
-   ```bash
-   python scripts/setup_knowledge_base.py
-   ```
+## 🏗️ Project Structure
 
-3. **Verify Processing**: Check that vector stores are created in `knowledge_base/processed/`
+```
+shakti-ai/
+├── 📱 app.py                      # Main Streamlit application
+├── 📋 requirements.txt           # Python dependencies
+├── 🔧 .env                       # Environment configuration
+├── 📖 README.md                  # This file
+│
+├── 🧠 core/                      # Core AI functionality
+│   ├── agents.py                 # AI agent definitions
+│   ├── crew.py                   # CrewAI configuration
+│   ├── llm.py                    # Language model setup
+│   └── get_voice_input.py        # Voice input handling
+│
+├── 🗄️ database/                  # Database management
+│   ├── db_config.py              # PostgreSQL configuration
+│   ├── create_database.py        # Database setup script
+│   ├── wishes_vault_db.py        # Wishes vault implementation
+│   └── db_wishes.key             # Encryption key (auto-generated)
+│
+├── 📚 knowledge_base/            # AI knowledge resources
+│   ├── document_processor.py     # PDF processing
+│   ├── kb_manager.py             # Knowledge base management
+│   ├── retriever.py              # Document retrieval
+│   ├── vector_store.py           # Vector storage
+│   ├── raw_pdfs/                 # Source documents
+│   ├── processed/                # Processed vector stores
+│   └── metadata/                 # Document metadata
+│
+├── 🧪 tests/                     # Test files
+│   ├── test_db_connection.py     # Database connectivity tests
+│   ├── test_complete_db.py       # Full database integration tests
+│   ├── fix_postgres_password.py  # Password troubleshooting
+│   └── test_*.py                 # Additional test files
+│
+├── 🛠️ utils/                     # Utility scripts
+│   ├── setup_database.py         # GUI database setup
+│   ├── quick_db_setup.py         # Quick setup script
+│   └── setup_*.py                # Additional utilities
+│
+├── 📦 install/                   # Installation scripts
+│   ├── install_and_setup.py      # Complete installation
+│   ├── install_minimal.py        # Minimal installation
+│   ├── install_windows.bat       # Windows batch installer
+│   ├── install_windows.ps1       # PowerShell installer
+│   └── install_unix.sh           # Unix/Linux installer
+│
+├── 📄 docs/                      # Documentation
+│   ├── INSTALLATION_GUIDE.md     # Detailed installation guide
+│   ├── POSTGRESQL_SETUP_COMPLETE.md  # Database setup guide
+│   ├── FEATURE_ENHANCEMENTS_COMPLETED.md  # Development log
+│   └── *.md                      # Additional documentation
+│
+├── 🗂️ legacy/                    # Legacy files
+│   ├── wishes.enc                # Old encrypted wishes
+│   └── wishes.key               # Old encryption key
+│
+└── 📊 logs/                      # Application logs
+```
 
-## Setup Instructions
+## 🚀 Quick Start
 
-### 1. Install Dependencies
+### Prerequisites
+- Python 3.8+
+- PostgreSQL 12+
+- Git
 
+### 1️⃣ Clone Repository
+```bash
+git clone <repository-url>
+cd shakti-ai
+```
+
+### 2️⃣ Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure API Key
-
-Create a `.env` file in the project root (or copy from `.env.example`) with your Google API key:
-
-```
-GOOGLE_API_KEY=your_google_api_key_here
-```
-
-You need to obtain a Google API key with access to the Gemini 2.0 Flash model.
-
-### 3. Set Up Knowledge Base (Optional)
-
-If you want to enhance the agents with PDF knowledge bases:
-
+### 3️⃣ Setup PostgreSQL Database
 ```bash
-# Add your PDF documents to the appropriate directories
-# Then run the setup script
-python scripts/setup_knowledge_base.py
+# Run the database setup script
+python utils/quick_db_setup.py
+
+# Or setup manually:
+createdb -U postgres shakti_ai_db
+python database/create_database.py
 ```
 
-### 4. Run the Application
+### 4️⃣ Configure Environment
+```bash
+# Copy and edit environment file
+cp .env.example .env
+# Edit .env with your PostgreSQL credentials
+```
 
+### 5️⃣ Launch Application
 ```bash
 streamlit run app.py
 ```
 
-The application will be available at http://localhost:8501
+Visit `http://localhost:8501` to access SHAKTI-AI!
 
-## Usage
+## 🔧 Configuration
 
-1. Enter your question or concern in the text area
-2. Optionally select which expert agents you want to consult
-3. Click "Get Guidance" to receive a response
-4. If knowledge bases are configured, responses will include relevant citations
+### Environment Variables (.env)
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_NAME=shakti_ai_db
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_PORT=5432
 
-## Project Structure
+# API Keys (Optional)
+GOOGLE_API_KEY=your_gemini_api_key
+OPENWEATHER_API_KEY=your_weather_api_key
 
-- `app.py`: Streamlit web application
-- `llm.py`: LLM implementation using Google's Gemini 2.0 Flash
-- `agents.py`: Agent definitions and configurations
-- `crew.py`: Agent orchestration with knowledge base integration
-- `knowledge_base/`: PDF processing and vector storage system
-  - `document_processor.py`: PDF text extraction and chunking
-  - `vector_store.py`: FAISS-based vector storage and search
-  - `retriever.py`: Knowledge retrieval and context formatting
-  - `kb_manager.py`: Knowledge base management and setup
-- `scripts/setup_knowledge_base.py`: Interactive setup script
-- `.env`: Environment variables and configuration
-- `requirements.txt`: Project dependencies
+# Email Configuration (Optional)
+SENDER_EMAIL=your_email@gmail.com
+SENDER_PASSWORD=your_app_password
+```
 
-## Knowledge Base Features
+### Required APIs
+- **Google Gemini API**: For AI conversations (free tier available)
+- **OpenWeatherMap API**: For weather data (free tier available)
 
-- **Multi-format Support**: Handles various PDF types and layouts
-- **Intelligent Chunking**: Semantic text splitting with overlap
-- **Vector Search**: Fast similarity search using FAISS
-- **Source Attribution**: Automatic citation of source documents
-- **Easy Management**: Interactive scripts for setup and maintenance
-- **Scalable**: Add new documents and rebuild indexes easily
+## 🎮 Usage Guide
 
-## Disclaimer
+### Main Interface
+1. **Chat with AI**: Select an AI companion and start chatting
+2. **Voice Input**: Click microphone icon for voice interaction
+3. **Weather Mode**: Access panic mode for weather alerts
+4. **Wishes Vault**: Store and manage personal wishes securely
 
-SHAKTI-AI provides general information only and is not a substitute for professional medical, legal, or mental health advice. Always consult qualified professionals for specific concerns.
+### Weather Panic Mode
+- Real-time weather monitoring
+- Severe weather alerts
+- Air quality information
+- Emergency contact integration
+
+### Wishes Vault
+- Create encrypted personal wishes
+- Add trusted contact information
+- Share via email or WhatsApp
+- View sharing history
+
+## 🧪 Testing
+
+### Database Tests
+```bash
+# Test database connection
+python tests/test_db_connection.py
+
+# Test complete database functionality
+python tests/test_complete_db.py
+
+# Fix password issues
+python tests/fix_postgres_password.py
+```
+
+### Application Tests
+```bash
+# Test voice input
+python tests/test_voice.py
+
+# Test JSON handling
+python tests/test_json_fix.py
+```
+
+## 🔒 Security Features
+
+- **Encryption**: All wishes encrypted with Fernet (AES 128)
+- **Database Security**: PostgreSQL with parameterized queries
+- **Privacy**: No permanent storage of shared content
+- **Access Control**: User-based data isolation
+- **Secure Communication**: HTTPS recommended for production
+
+## 🛠️ Development
+
+### Adding New AI Agents
+1. Define agent in `core/agents.py`
+2. Add knowledge base in `knowledge_base/raw_pdfs/`
+3. Process documents with `knowledge_base/document_processor.py`
+4. Update crew configuration in `core/crew.py`
+
+### Database Schema
+- **wishes**: Encrypted wishes storage
+- **sharing_history**: Sharing activity tracking
+- **Indexes**: Optimized for user queries
+
+### Contributing
+1. Fork the repository
+2. Create feature branch
+3. Add tests for new features
+4. Submit pull request
+
+## 📊 Performance
+
+- **Database**: PostgreSQL with optimized indexes
+- **Caching**: Streamlit session state for UI performance
+- **Vector Search**: FAISS for fast knowledge retrieval
+- **Memory**: Efficient document processing pipeline
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**Database Connection Failed**
+```bash
+# Check PostgreSQL status
+sudo systemctl status postgresql  # Linux
+net start postgresql-x64-17       # Windows
+
+# Test connection
+python tests/test_db_connection.py
+```
+
+**Import Errors**
+```bash
+# Reinstall dependencies
+pip install -r requirements.txt --force-reinstall
+```
+
+**Voice Input Issues**
+```bash
+# Install audio dependencies
+pip install pyaudio speechrecognition
+```
+
+## 📈 Roadmap
+
+- [ ] **User Authentication**: Multi-user support with authentication
+- [ ] **Mobile App**: React Native companion app
+- [ ] **Advanced Analytics**: User interaction insights
+- [ ] **Cloud Deployment**: AWS/Azure deployment guides
+- [ ] **API Integration**: RESTful API for third-party access
+- [ ] **Multilingual Support**: Additional language support
+
+## 🤝 Support
+
+- **Documentation**: Check `docs/` folder for detailed guides
+- **Issues**: Report bugs via GitHub issues
+- **Community**: Join our Discord community
+- **Email**: support@shakti-ai.com
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Streamlit**: Amazing web app framework
+- **CrewAI**: Multi-agent AI framework
+- **PostgreSQL**: Robust database system
+- **Google Gemini**: Powerful language model
+- **Open Source Community**: For endless inspiration
+
+---
+
+<div align="center">
+
+**🌟 SHAKTI-AI: Empowering Wellness Through AI 🌟**
+
+[![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️-red.svg)](https://github.com/your-repo)
+[![Python](https://img.shields.io/badge/Built%20with-Python-blue.svg)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Powered%20by-Streamlit-red.svg)](https://streamlit.io/)
+
+</div>
