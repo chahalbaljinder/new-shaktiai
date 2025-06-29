@@ -376,148 +376,107 @@ def show_fake_weather():
     """, unsafe_allow_html=True)
     
     
-    # Main weather app container
-    st.markdown('<div class="weather-app-container">', unsafe_allow_html=True)
-    
-    # Improved search bar and tabs
-    st.markdown("""
-    <div class='fake-search-bar'>
-        <span class='search-icon'>🔍</span>
-        <input type='text' placeholder='Search for a city...' disabled>
-        <span class='location-icon'>📍</span>
-    </div>
-    <div class='nav-tabs'>
-        <span class='nav-tab'>☀️ Today</span>
-        <span class='nav-tab'>📅 Week</span>
-        <span class='nav-tab'>🌍 Maps</span>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    now = datetime.now()
-    cities = ["New Delhi", "Mumbai", "Bangalore", "Chennai", "Kolkata", "Hyderabad"]
-    current_city = random.choice(cities)
-    temp = random.randint(24, 36)
-    humidity = random.randint(40, 80)
-    wind = random.randint(5, 20)
-    aqi = random.randint(40, 120)
-    
-    conditions = [
-        ("Sunny", "☀️"), ("Cloudy", "⛅"), ("Rainy", "🌦️"), ("Stormy", "⛈️"), ("Hazy", "🌫️")
-    ]
-    condition, icon = random.choice(conditions)
-    feels_like = temp + random.randint(-3, 5)
-    
-    # Main weather display
-    st.markdown(f"""
-    <div class='weather-main'>
-        <h3>📍 {current_city}</h3>
-        <h1>{icon} {temp}°C</h1>
-        <p>{condition} • Feels like {feels_like}°C</p>
-        <span class='aqi-badge'>AQI {aqi}</span>
-        <div style='margin-top:1em;'>
-            <span class='small-metric'>💧 {humidity}%</span>
-            <span class='small-metric'>💨 {wind} km/h</span>
-            <span class='small-metric'>👁️ {random.randint(8,15)} km</span>
-            <span class='small-metric'>🌡️ {random.randint(1010,1025)} mb</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # 5-day forecast with horizontal cards
-    st.markdown("<h4 style='text-align:center;margin:2em 0 1em 0;color:#2d3436;font-size:1.4em;font-weight:700;'>📅 5-Day Forecast</h4>", unsafe_allow_html=True)
-    
-    # Generate all forecast cards in a single HTML string
-    forecast_html = "<div class='compact-forecast'>"
-    
-    for i in range(1, 6):
-        future_date = now + timedelta(days=i)
-        day_temp = random.randint(22, 38)
-        day_condition, day_icon = random.choice(conditions)
-        rain_chance = random.randint(0, 80)
-        
-        forecast_html += f"""
-        <div class='forecast-card'>
-            <div class='forecast-day'>{future_date.strftime('%a')}</div>
-            <div class='forecast-icon'>{day_icon}</div>
-            <div class='forecast-temp'>{day_temp}°</div>
-            <div class='forecast-rain'>💧 {rain_chance}%</div>
-        </div>"""
-    
-    forecast_html += "</div>"
-    st.markdown(forecast_html, unsafe_allow_html=True)
-    
-    # Compact grid layout for additional info
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Air Quality
-        st.markdown(f"""
-        <div class='compact-section'>
-            <h5>🌬️ Air Quality</h5>
-            <div style='display:flex;justify-content:space-between;'>
-                <span><strong>PM2.5:</strong> {random.randint(25, 85)}</span>
-                <span><strong>PM10:</strong> {random.randint(40, 120)}</span>
-                <span><strong>O₃:</strong> {random.randint(30, 80)}</span>
+    import requests
+    from datetime import datetime, timedelta
+    city_name = "New Delhi"
+    API_KEY = 'aeb88e64cde7325df7186b541539cd42'
+    url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={API_KEY}&units=metric"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            main = data['main']
+            wind = data['wind']
+            weather = data['weather'][0]
+            temperature = main['temp']
+            humidity = main['humidity']
+            wind_speed = wind['speed']
+            description = weather['description']
+            icon = weather['icon']
+            city = data['name']
+            dt = datetime.fromtimestamp(data['dt'])
+            sunrise = datetime.fromtimestamp(data['sys']['sunrise']).strftime('%I:%M %p')
+            sunset = datetime.fromtimestamp(data['sys']['sunset']).strftime('%I:%M %p')
+
+            # Try to get 7-day forecast (OpenWeatherMap free API does not support this endpoint, so fallback to mock data)
+            forecast_data = []
+            try:
+                forecast_resp = requests.get(f"https://api.openweathermap.org/data/2.5/forecast?q={city_name}&appid={API_KEY}&units=metric")
+                if forecast_resp.status_code == 200:
+                    forecast_json = forecast_resp.json()
+                    from collections import OrderedDict
+                    days = OrderedDict()
+                    for entry in forecast_json['list']:
+                        dt_txt = entry['dt_txt']
+                        if "12:00:00" in dt_txt:
+                            day = dt_txt.split(" ")[0]
+                            if day not in days:
+                                days[day] = entry
+                        if len(days) == 7:
+                            break
+                    for day, entry in days.items():
+                        day_dt = datetime.strptime(day, "%Y-%m-%d")
+                        temp = entry['main']['temp']
+                        desc = entry['weather'][0]['description']
+                        icon_f = entry['weather'][0]['icon']
+                        temp_min = entry['main']['temp_min']
+                        temp_max = entry['main']['temp_max']
+                        forecast_data.append({
+                            'date': day_dt,
+                            'temp': temp,
+                            'desc': desc,
+                            'icon': icon_f,
+                            'min': temp_min,
+                            'max': temp_max
+                        })
+                else:
+                    forecast_data = []
+            except Exception:
+                forecast_data = []
+            # If no forecast, use repeated current data
+            if not forecast_data:
+                for i in range(7):
+                    day_dt = datetime.now() + timedelta(days=i)
+                    forecast_data.append({
+                        'date': day_dt,
+                        'temp': temperature,
+                        'desc': description,
+                        'icon': icon,
+                        'min': temperature-2,
+                        'max': temperature+2
+                    })
+
+            # --- UI ---
+            st.markdown(f'''
+            <div style="max-width:900px;margin:0 auto;background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);border-radius:24px;padding:2.5em 2em 2em 2em;box-shadow:0 8px 32px rgba(0,0,0,0.10);">
+                <div class="fake-search-bar" style="margin-bottom:2em;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" value="{city}" placeholder="Search for city..." style="width:100%;border:none;background:transparent;font-size:1.1em;outline:none;" disabled />
+                </div>
+                <div class="weather-main" style="background:rgba(255,255,255,0.85);border-radius:18px;padding:2em 1.5em 1.5em 1.5em;box-shadow:0 8px 32px rgba(0,0,0,0.10);margin-bottom:2em;">
+                    <div style="font-size:2.5em;font-weight:700;color:#222;">{temperature:.0f}°C</div>
+                    <div style="font-size:1.2em;color:#555;margin-bottom:0.5em;text-transform:capitalize;">{description}</div>
+                    <div style="font-size:1.1em;color:#888;margin-bottom:0.5em;">H: {main['temp_max']:.0f}°C &nbsp; L: {main['temp_min']:.0f}°C</div>
+                    <img src='http://openweathermap.org/img/wn/{icon}@4x.png' style='width:90px;margin-bottom:0.5em;' />
+                    <div style="font-size:1em;color:#888;margin-bottom:0.5em;">Humidity: {humidity}% &nbsp;|&nbsp; Wind: {wind_speed} m/s</div>
+                    <div style="font-size:0.95em;color:#888;margin-bottom:0.5em;">Sunrise: {sunrise} &nbsp;|&nbsp; Sunset: {sunset}</div>
+                    <div style="font-size:0.9em;color:#aaa;">Last updated: {dt.strftime('%I:%M %p')}</div>
+                </div>
+                <div style="margin-bottom:2em;">
+                    <div style="font-weight:600;font-size:1.1em;margin-bottom:0.7em;color:#111;">Today</div>
+                    <div class="compact-forecast" style="display:flex;gap:1em;overflow-x:auto;">
+                        {''.join([
+                            f'''<div class=\"forecast-card\" style=\"min-width:110px;max-width:130px;background:#d3d3d3;box-shadow:0 8px 32px rgba(0,0,0,0.10);border-radius:18px;padding:1.5em 1em;display:flex;flex-direction:column;align-items:center;justify-content:center;\">\n    <div class=\"forecast-day\" style=\"color:#555;font-weight:600;font-size:1em;margin-bottom:0.5em;\">{(datetime.now().replace(hour=12)+timedelta(hours=i)).strftime('%I %p')}\</div>\n    <img src='http://openweathermap.org/img/wn/{icon}@2x.png' class=\"forecast-icon\" style=\"width:48px;\" />\n    <div class=\"forecast-temp\" style=\"color:#222;font-weight:700;font-size:1.3em;margin-top:0.5em;\">{temperature:.0f}°C</div>\n</div>''' for i in range(5)
+                        ])}
+                    </div>
+                </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Sun times
-        sunrise_hour = random.randint(5, 7)
-        sunset_hour = random.randint(17, 19)
-        st.markdown(f"""
-        <div class='compact-section'>
-            <h5 style='margin:0.2em 0;color:#555;font-size:0.9em;'>🌅 Sun Times</h5>
-            <div style='display:flex;justify-content:space-between;font-size:0.8em;'>
-                <span>🌅 {sunrise_hour:02d}:{random.randint(0,59):02d} AM</span>
-                <span>🌇 {sunset_hour:02d}:{random.randint(0,59):02d} PM</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+            ''', unsafe_allow_html=True)
+        else:
+            st.error("Could not fetch weather data.")
+    except Exception as e:
+        st.error(f"Weather API error: {e}")
     
-    with col2:
-        # Weather alerts (compact)
-        alert_tips = [
-            "🌡️ High temp today - stay hydrated",
-            "🌧️ Monsoon active - carry umbrella",
-            "💨 Strong winds - secure items",
-            "🌫️ Poor air quality - wear mask"
-        ]
-        selected_tip = random.choice(alert_tips)
-        
-        st.markdown(f"""
-        <div class='compact-section'>
-            <h5 style='margin:0.2em 0;color:#555;font-size:0.9em;'>⚠️ Weather Alert</h5>
-            <div style='font-size:0.8em;color:#856404;'>{selected_tip}</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Traffic update (compact)
-        traffic_updates = [
-            "� Normal traffic flow",
-            "🟡 Moderate congestion",
-            "� Heavy traffic reported",
-            "🚌 Metro running on time"
-        ]
-        selected_traffic = random.choice(traffic_updates)
-        
-        st.markdown(f"""
-        <div class='compact-section'>
-            <h5 style='margin:0.2em 0;color:#555;font-size:0.9em;'>🚗 Traffic Status</h5>
-            <div style='font-size:0.8em;'>{selected_traffic}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Current time display
-    current_time = now.strftime("%I:%M %p")
-    current_date = now.strftime("%A, %B %d")
-    
-    st.markdown(f"""
-    <div class='time-display'>
-        <span style='font-size:1.2em;font-weight:bold;'>🕒 {current_time}</span>
-        <span style='margin-left:2em;font-size:1em;opacity:0.9;'>{current_date}</span>
-    </div>
-    """, unsafe_allow_html=True)
     
     # Emergency services buttons
     col1, col2 = st.columns([3, 1])
