@@ -15,7 +15,7 @@ import phonenumbers
 import re
 from datetime import datetime, timedelta
 import random
-from db_config import wishes_db
+from .db_config import wishes_db
 
 def validate_email(email):
     """Validate email format."""

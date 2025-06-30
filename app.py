@@ -3,14 +3,14 @@ Enhanced SHAKTI-AI Streamlit application with voice input and sharing features.
 """
 
 import streamlit as st
-from crew import ask_shakti_ai
+from core.crew import ask_shakti_ai
 from dotenv import load_dotenv
 import os
-from get_voice_input import get_voice_input, get_voice_input_interactive
+from core.get_voice_input import get_voice_input, get_voice_input_interactive
 from streamlit.components.v1 import html
 import random
 from datetime import datetime, timedelta
-from wishes_vault_db import show_secure_wishes_vault
+from database.wishes_vault_db import show_secure_wishes_vault
 
 # Load environment variables
 load_dotenv()
