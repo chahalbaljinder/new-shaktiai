@@ -3,6 +3,34 @@
 .env.*
 !.env.example
 
+# Node.js and Next.js
+node_modules/
+.next/
+.nuxt/
+dist/
+build/
+out/
+*.tsbuildinfo
+.turbo/
+
+# Package manager
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.yarn/
+.pnpm/
+
+# Next.js specific
+.next/
+.vercel/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# TypeScript
+*.tsbuildinfo
+
 # Python
 __pycache__/
 *.py[cod]
@@ -24,6 +52,9 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.pyc
+*.pyo
+*.pyd
 
 # Virtual environments
 venv/
@@ -32,8 +63,9 @@ env/
 ENV/
 env.bak/
 venv.bak/
+.conda/
 
-# Document files
+# Document files (keep some for documentation)
 *.pdf
 *.doc
 *.docx
@@ -43,9 +75,28 @@ venv.bak/
 *.xlsx
 
 # Vector stores and knowledge bases
-agentss/**/vector_store/
+knowledge_base/**/processed/
+knowledge_base/**/vector_store/
+knowledge_base/**/vectorstore/
 **/vector_store/
-# **/knowledge_base/
+**/vectorstore/
+*.faiss
+*.index
+
+# Database and encryption files
+*.db
+*.sqlite
+*.sqlite3
+*.enc
+*.key
+db_wishes.key
+wishes.enc
+wishes.key
+
+# SHAKTI-AI specific data
+legacy/wishes.enc
+legacy/wishes.key
+database/db_wishes.key
 
 # IDEs and editors
 .idea/
@@ -55,40 +106,138 @@ agentss/**/vector_store/
 *~
 .DS_Store
 .vs/
+*.code-workspace
 
 # Jupyter notebooks
-.ipynb_checkpoints
+.ipynb_checkpoints/
 *.ipynb
+.jupyter/
 
-# Logs
+# Logs and debugging
 logs/
 *.log
 pip-log.txt
 pip-delete-this-directory.txt
+debug.log
+error.log
+access.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+jest-coverage/
+.jest/
 
 # Streamlit
 .streamlit/
 
-# Large model files
+# Large model files and AI assets
 *.bin
 *.pt
 *.pth
 *.onnx
 *.h5
+*.safetensors
+models/
+checkpoints/
 
-# Database files
-*.db
-*.sqlite
-*.sqlite3
+# Audio and media files (temporary)
+temp_audio/
+*.wav
+*.mp3
+*.mp4
+*.avi
+*.mov
+*.webm
+audio_uploads/
 
 # Cache files
 .cache/
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
+.parcel-cache/
+.sass-cache/
+.stylelintcache
+.eslintcache
 
-# Windows specific
+# OS specific
+# Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.#*
+\#*#
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Dependencies and packages
+jspm_packages/
+bower_components/
+web_modules/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm/
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test/
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*

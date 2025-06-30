@@ -17,4 +17,10 @@ pyaudio
 pywhatkit
 phonenumbers
 yagmail
-psycopg2-binary 
+psycopg2-binary
+fastapi
+uvicorn
+python-multipart
+email-validator
+pydub
+ffmpeg-python
