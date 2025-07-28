@@ -73,14 +73,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Check if user is already logged in
-    fetch('/api/auth/me')
-      .then(res => res.json())
-      .then(data => {
-        if (data.user) setUser(data.user)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    console.log('AuthProvider: Starting auth check...')
+    
+    // Simple fetch with immediate timeout fallback
+    const checkAuth = () => {
+      console.log('AuthProvider: Making API call to /api/auth/me')
+      
+      fetch('/api/auth/me')
+        .then(res => {
+          console.log('AuthProvider: API response received', res.status)
+          if (res.ok) {
+            return res.json()
+          }
+          throw new Error('API response not ok')
+        })
+        .then(data => {
+          console.log('AuthProvider: Response data:', data)
+          if (data && data.user) {
+            setUser(data.user)
+          }
+        })
+        .catch(error => {
+          console.log('AuthProvider: Auth check failed:', error)
+        })
+        .finally(() => {
+          console.log('AuthProvider: Setting loading to false')
+          setLoading(false)
+        })
+      
+      // Fallback timeout - if API doesn't respond in 2 seconds, stop loading anyway
+      setTimeout(() => {
+        console.log('AuthProvider: Fallback timeout - stopping loading')
+        setLoading(false)
+      }, 2000)
+    }
+    
+    checkAuth()
   }, [])
 
   return (

@@ -77,10 +77,10 @@ const agents: Agent[] = [
 
 const agentMapping: { [key: string]: string } = {
   'gynika': 'reproductive',
-  'vaanya': 'legal', 
-  'nyaya': 'mental',
+  'vaanya': 'feminist', 
+  'nyaya': 'legal',
   'maaya': 'maternal',
-  'meher': 'feminist'
+  'meher': 'mental'
 }
 
 export default function KnowledgeBase() {
@@ -552,7 +552,7 @@ export default function KnowledgeBase() {
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto space-y-6">
           <AnimatePresence>
             {messages.map((message) => (
               <motion.div
@@ -562,24 +562,29 @@ export default function KnowledgeBase() {
                 exit={{ opacity: 0, y: -20 }}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-xs lg:max-w-md xl:max-w-lg px-4 py-3 rounded-2xl ${
+                <div className={`max-w-xs lg:max-w-2xl xl:max-w-3xl px-4 py-3 rounded-2xl ${
                   message.role === 'user'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-900'
+                    ? 'bg-blue-500 text-white ml-auto'
+                    : 'bg-white border border-gray-200 text-gray-900 shadow-sm'
                 }`}>
                   {message.role === 'agent' && (
-                    <div className="flex items-center mb-1 text-xs opacity-75">
-                      <Bot className="w-3 h-3 mr-1" />
+                    <div className="flex items-center mb-2 text-sm font-medium text-blue-600">
+                      <Bot className="w-4 h-4 mr-2" />
                       {message.agentName}
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap">{message.content}</p>
-                  {message.sources && (
-                    <div className="mt-2 pt-2 border-t border-gray-200 border-opacity-50">
-                      <p className="text-xs opacity-75">Sources: {message.sources.join(', ')}</p>
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {message.content}
+                  </div>
+                  {message.sources && message.sources.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <p className="text-xs text-gray-500 font-medium mb-1">Sources:</p>
+                      <p className="text-xs text-gray-500">{message.sources.join(', ')}</p>
                     </div>
                   )}
-                  <div className="mt-1 text-xs opacity-60 flex items-center">
+                  <div className={`mt-2 text-xs flex items-center ${
+                    message.role === 'user' ? 'text-blue-100' : 'text-gray-400'
+                  }`}>
                     <Clock className="w-3 h-3 mr-1" />
                     {message.timestamp.toLocaleTimeString()}
                   </div>
@@ -594,11 +599,15 @@ export default function KnowledgeBase() {
               animate={{ opacity: 1, y: 0 }}
               className="flex justify-start"
             >
-              <div className="bg-gray-100 px-4 py-3 rounded-2xl">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl shadow-sm">
+                <div className="flex items-center space-x-1 text-blue-600 mb-1">
+                  <Bot className="w-4 h-4" />
+                  <span className="text-sm font-medium">AI Agent is thinking...</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
               </div>
             </motion.div>
@@ -654,27 +663,38 @@ export default function KnowledgeBase() {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={
-                  isRecording 
+                  selectedAgents.length === 0
+                    ? "Please select an expert first..."
+                    : isRecording 
                     ? "🎤 Recording... Speak now and click the microphone to stop"
                     : speechToTextMutation.isPending
                     ? "Processing voice input..."
-                    : "Ask about health, legal rights, wellness, or any support you need... (or use voice input 🎤)"
+                    : "Message SHAKTI AI experts... (or use voice input 🎤)"
                 }
-                className={`w-full px-4 py-3 border border-gray-300 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  isRecording ? 'border-red-300 bg-red-50' : ''
+                className={`w-full px-4 py-3 border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  isRecording ? 'border-red-300 bg-red-50' : 
+                  selectedAgents.length === 0 ? 'border-gray-200 bg-gray-50' :
+                  'border-gray-300 bg-white hover:border-gray-400'
                 }`}
-                rows={Math.min(inputValue.split('\n').length, 4) || 1}
-                disabled={isLoading}
+                rows={Math.min(Math.max(inputValue.split('\n').length, 1), 4)}
+                disabled={isLoading || selectedAgents.length === 0}
               />
+              {selectedAgents.length === 0 && (
+                <div className="absolute inset-0 bg-gray-50 bg-opacity-50 rounded-2xl flex items-center justify-center pointer-events-none">
+                  <p className="text-sm text-gray-500">Select an expert above to start chatting</p>
+                </div>
+              )}
             </div>
             <button
               onClick={handleVoiceToggle}
-              disabled={isLoading || speechToTextMutation.isPending}
+              disabled={isLoading || speechToTextMutation.isPending || selectedAgents.length === 0}
               className={`p-3 rounded-full transition-colors ${
                 voiceActive && isRecording 
                   ? 'bg-red-500 text-white animate-pulse' 
                   : voiceActive
                   ? 'bg-orange-500 text-white'
+                  : selectedAgents.length === 0
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
               title={
@@ -695,12 +715,27 @@ export default function KnowledgeBase() {
             </button>
             <button
               onClick={handleSendMessage}
-              disabled={!inputValue.trim() || isLoading}
-              className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={!inputValue.trim() || isLoading || selectedAgents.length === 0}
+              className={`p-3 rounded-full transition-colors ${
+                !inputValue.trim() || selectedAgents.length === 0 || isLoading
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-500 text-white hover:bg-blue-600'
+              }`}
             >
-              <Send className="w-5 h-5" />
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
             </button>
           </div>
+          
+          {/* Expert selection hint */}
+          {selectedAgents.length === 0 && (
+            <div className="mt-3 text-center">
+              <p className="text-sm text-gray-500">👆 Select one or more experts above to start your conversation</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
