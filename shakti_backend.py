@@ -49,6 +49,9 @@ class RealAIHandler(BaseHTTPRequestHandler):
                 "timestamp": datetime.now().isoformat()
             }
             self.wfile.write(json.dumps(response).encode())
+        elif self.path == '/api/wishes/list':
+            # Handle wishes list request via GET
+            self.handle_wishes_list()
         else:
             self.send_response(404)
             self.end_headers()
@@ -121,9 +124,206 @@ class RealAIHandler(BaseHTTPRequestHandler):
                 }
                 
                 self.wfile.write(json.dumps(error_response).encode())
+        
+        elif self.path == '/api/wishes/list':
+            # Handle wishes list request
+            self.handle_wishes_list()
+        elif self.path == '/api/wishes/create':
+            # Handle create wish request
+            self.handle_create_wish()
+        elif self.path.startswith('/api/wishes/') and self.path.endswith('/delete'):
+            # Handle delete wish request
+            self.handle_delete_wish()
+        elif self.path.startswith('/api/wishes/') and self.path.endswith('/update'):
+            # Handle update wish request
+            self.handle_update_wish()
         else:
             self.send_response(404)
             self.end_headers()
+    
+    def handle_wishes_list(self):
+        """Handle getting list of wishes"""
+        try:
+            wishes = self.load_wishes()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            response = {
+                "wishes": wishes,
+                "status": "success"
+            }
+            self.wfile.write(json.dumps(response).encode())
+            print(f"✅ Returned {len(wishes)} wishes")
+            
+        except Exception as e:
+            print(f"❌ Error loading wishes: {e}")
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            error_response = {
+                "error": f"Failed to load wishes: {str(e)}",
+                "status": "error"
+            }
+            self.wfile.write(json.dumps(error_response).encode())
+    
+    def handle_create_wish(self):
+        """Handle creating a new wish"""
+        try:
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            wish = {
+                "id": len(self.load_wishes()) + 1,
+                "title": data.get('title', ''),
+                "content": data.get('content', ''),
+                "category": data.get('category', 'personal'),
+                "priority": data.get('priority', 'medium'),
+                "reminder_date": data.get('reminder_date', ''),
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat()
+            }
+            
+            wishes = self.load_wishes()
+            wishes.append(wish)
+            self.save_wishes(wishes)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            response = {
+                "wish": wish,
+                "message": "Wish created successfully",
+                "status": "success"
+            }
+            self.wfile.write(json.dumps(response).encode())
+            print(f"✅ Created wish: {wish['title']}")
+            
+        except Exception as e:
+            print(f"❌ Error creating wish: {e}")
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            error_response = {
+                "error": f"Failed to create wish: {str(e)}",
+                "status": "error"
+            }
+            self.wfile.write(json.dumps(error_response).encode())
+    
+    def handle_delete_wish(self):
+        """Handle deleting a wish"""
+        try:
+            # Extract wish ID from path
+            wish_id = int(self.path.split('/')[-2])
+            
+            wishes = self.load_wishes()
+            wishes = [w for w in wishes if w.get('id') != wish_id]
+            self.save_wishes(wishes)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            response = {
+                "message": "Wish deleted successfully",
+                "status": "success"
+            }
+            self.wfile.write(json.dumps(response).encode())
+            print(f"✅ Deleted wish ID: {wish_id}")
+            
+        except Exception as e:
+            print(f"❌ Error deleting wish: {e}")
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            error_response = {
+                "error": f"Failed to delete wish: {str(e)}",
+                "status": "error"
+            }
+            self.wfile.write(json.dumps(error_response).encode())
+    
+    def handle_update_wish(self):
+        """Handle updating a wish"""
+        try:
+            # Extract wish ID from path
+            wish_id = int(self.path.split('/')[-2])
+            
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            wishes = self.load_wishes()
+            for i, wish in enumerate(wishes):
+                if wish.get('id') == wish_id:
+                    wishes[i].update({
+                        "title": data.get('title', wish['title']),
+                        "content": data.get('content', wish['content']),
+                        "category": data.get('category', wish['category']),
+                        "priority": data.get('priority', wish['priority']),
+                        "reminder_date": data.get('reminder_date', wish['reminder_date']),
+                        "updated_at": datetime.now().isoformat()
+                    })
+                    break
+            
+            self.save_wishes(wishes)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            response = {
+                "message": "Wish updated successfully",
+                "status": "success"
+            }
+            self.wfile.write(json.dumps(response).encode())
+            print(f"✅ Updated wish ID: {wish_id}")
+            
+        except Exception as e:
+            print(f"❌ Error updating wish: {e}")
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            error_response = {
+                "error": f"Failed to update wish: {str(e)}",
+                "status": "error"
+            }
+            self.wfile.write(json.dumps(error_response).encode())
+    
+    def load_wishes(self):
+        """Load wishes from JSON file"""
+        try:
+            wishes_file = os.path.join(os.path.dirname(__file__), 'wishes_data.json')
+            if os.path.exists(wishes_file):
+                with open(wishes_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    return data.get('wishes', [])
+            return []
+        except Exception:
+            return []
+    
+    def save_wishes(self, wishes):
+        """Save wishes to JSON file"""
+        try:
+            wishes_file = os.path.join(os.path.dirname(__file__), 'wishes_data.json')
+            with open(wishes_file, 'w', encoding='utf-8') as f:
+                json.dump({"wishes": wishes}, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"❌ Error saving wishes: {e}")
+            raise
 
 def run_real_ai_backend():
     print("🚀 Starting SHAKTI-AI Real Backend with Actual Agents")

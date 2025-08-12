@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Bell, Sun, Cloud, CloudRain, Thermometer } from 'lucide-react'
+import { useAppStore } from '@/lib/store'
 
 interface DashboardProps {
   userName?: string
@@ -110,6 +111,8 @@ const recentActivity = [
 ]
 
 export default function Dashboard({ userName = 'User' }: DashboardProps) {
+  const { setCurrentPage } = useAppStore()
+
   return (
     <div className="min-h-screen overflow-y-auto">
       <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8 pb-20">
@@ -161,11 +164,23 @@ export default function Dashboard({ userName = 'User' }: DashboardProps) {
           <motion.div
             key={stat.label}
             whileHover={{ scale: 1.02, y: -2 }}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 text-center"
+            className={`bg-white rounded-2xl p-6 shadow-sm border border-gray-200 text-center ${
+              stat.label === 'AI Experts' 
+                ? 'cursor-pointer hover:shadow-md transition-shadow' 
+                : ''
+            }`}
+            onClick={() => {
+              if (stat.label === 'AI Experts') {
+                setCurrentPage('agents')
+              }
+            }}
           >
             <div className="text-3xl mb-2">{stat.icon}</div>
             <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
             <div className="text-sm text-gray-500">{stat.label}</div>
+            {stat.label === 'AI Experts' && (
+              <div className="text-xs text-purple-600 mt-1 font-medium">Click to meet them</div>
+            )}
           </motion.div>
         ))}
       </motion.div>

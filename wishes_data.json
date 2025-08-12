@@ -1,0 +1,114 @@
+{
+  "wishes": [
+    {
+      "id": 1,
+      "title": "Custody of Child",
+      "content": "If I die, I want my sister to raise my child, not my husband or his family.",
+      "category": "custody",
+      "priority": "high",
+      "trigger_condition": "death",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "title": "Physical Contact Consent",
+      "content": "If I am ever unconscious or in a coma, I do not consent to any non-medical physical contact from anyone other than my chosen guardian.",
+      "category": "bodily_autonomy",
+      "priority": "high",
+      "trigger_condition": "unconscious_state",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "title": "Organ Donation",
+      "content": "If I am declared brain-dead, I consent to donating my organs, but only after my parents have been informed first.",
+      "category": "healthcare",
+      "priority": "medium",
+      "trigger_condition": "brain_death",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "title": "Avoid In-laws Residence",
+      "content": "If I am found in a situation where I cannot speak for myself, I do not want to be taken to my in-laws’ house under any circumstances.",
+      "category": "safety",
+      "priority": "high",
+      "trigger_condition": "incapacitated",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "title": "Trusted Contact in Arrest",
+      "content": "If I am ever arrested or detained, I want my trusted contact to be informed before anyone else.",
+      "category": "legal_rights",
+      "priority": "medium",
+      "trigger_condition": "arrest_or_detention",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "title": "Psychiatric Facility Consent",
+      "content": "I do not consent to being placed in a psychiatric facility without a second independent medical opinion from a doctor I trust.",
+      "category": "healthcare",
+      "priority": "high",
+      "trigger_condition": "mental_health_intervention",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "title": "Female-led Assault Response",
+      "content": "If I am sexually assaulted, I want a female police officer to take my statement and a woman doctor to conduct any medical examination.",
+      "category": "bodily_autonomy",
+      "priority": "high",
+      "trigger_condition": "sexual_assault",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "title": "Posthumous Rituals",
+      "content": "In case of my death, I wish to be buried or cremated according to my stated personal beliefs, and not in any other way.",
+      "category": "posthumous_wishes",
+      "priority": "medium",
+      "trigger_condition": "death",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "title": "Restrict Location Sharing",
+      "content": "If I am ever reported missing, I do not want my location shared with specific people I have listed.",
+      "category": "privacy",
+      "priority": "high",
+      "trigger_condition": "missing_person_case",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "title": "Media Privacy After Death",
+      "content": "I do not consent to any posthumous use of my photos or videos without my written permission during my lifetime.",
+      "category": "privacy",
+      "priority": "medium",
+      "trigger_condition": "death",
+      "created_at": "2025-08-12T10:00:00.000Z",
+      "updated_at": "2025-08-12T10:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "title": "DEMO",
+      "content": "This is a demo wish!!!!",
+      "category": "personal",
+      "priority": "medium",
+      "reminder_date": "",
+      "created_at": "2025-08-12T17:38:19.526063",
+      "updated_at": "2025-08-12T17:38:19.526063"
+    }
+  ]
+}

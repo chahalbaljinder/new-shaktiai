@@ -12,6 +12,7 @@ import WishesVault from '@/components/WishesVault'
 import Settings from '@/components/Settings'
 import VoiceInterface from '@/components/VoiceInterface'
 import EmergencyMode from '@/components/EmergencyMode'
+import AIAgents from '@/components/AIAgents'
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -58,6 +59,8 @@ export default function HomePage() {
         return <WishesVault />
       case 'settings':
         return <Settings />
+      case 'agents':
+        return <AIAgents />
       default:
         return <Dashboard userName="Shakti" />
     }
