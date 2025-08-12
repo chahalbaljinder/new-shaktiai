@@ -121,74 +121,78 @@ export default function AIAgents() {
         </motion.div>
 
         {/* AI Agents Grid */}
-        <div className="space-y-6">
+        <div className="grid gap-4 lg:gap-6">
           {agents.map((agent, index) => (
             <motion.div
               key={agent.id}
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative"
+              transition={{ delay: index * 0.05 }}
+              className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 relative group overflow-hidden"
             >
               {/* Background decoration */}
-              <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${agent.color} opacity-10 rounded-full blur-2xl`}></div>
+              <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${agent.color} opacity-5 group-hover:opacity-10 rounded-full blur-xl transition-opacity`}></div>
               
-              {/* Agent Header */}
-              <div className="flex items-start justify-between mb-6 relative z-10">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${agent.color} rounded-2xl flex items-center justify-center text-2xl shadow-lg`}>
+              <div className="relative z-10 grid lg:grid-cols-12 gap-4 items-start">
+                {/* Left: Avatar & Basic Info */}
+                <div className="lg:col-span-8 flex items-start space-x-3">
+                  <div className={`w-10 h-10 bg-gradient-to-r ${agent.color} rounded-lg flex items-center justify-center text-base shadow-sm flex-shrink-0`}>
                     {agent.emoji}
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                      {agent.name}
-                    </h3>
-                    <div className="flex items-center space-x-2">
-                      <Brain className="w-5 h-5 text-gray-500" />
-                      <span className="text-gray-600 dark:text-gray-300 font-medium">
-                        Expertise: {agent.expertise}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate pr-2">
+                        {agent.name}
+                      </h3>
+                      <button
+                        onClick={() => setCurrentPage('knowledge')}
+                        className={`lg:hidden px-3 py-1.5 bg-gradient-to-r ${agent.color} text-white rounded-md text-xs font-medium hover:shadow-sm transition-all flex-shrink-0`}
+                      >
+                        Chat
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Brain className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                      <span className="text-gray-600 dark:text-gray-300 text-xs font-medium line-clamp-1">
+                        {agent.expertise}
                       </span>
+                    </div>
+                    
+                    <p className="text-gray-700 dark:text-gray-300 text-xs leading-relaxed line-clamp-2 mb-3">
+                      {agent.description}
+                    </p>
+                    
+                    {/* Specialties - Compact Tags */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {agent.specialties.slice(0, 4).map((specialty, idx) => (
+                        <span
+                          key={idx}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r ${agent.color} bg-opacity-10 text-gray-700 dark:text-gray-300`}
+                        >
+                          {specialty}
+                        </span>
+                      ))}
+                      {agent.specialties.length > 4 && (
+                        <span className="text-xs text-gray-500 px-1">
+                          +{agent.specialties.length - 4} more
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => setCurrentPage('knowledge')}
-                  className={`px-6 py-3 bg-gradient-to-r ${agent.color} text-white rounded-xl font-medium hover:shadow-lg transform hover:scale-105 transition-all`}
-                >
-                  Chat Now
-                </button>
-              </div>
 
-              {/* Agent Description */}
-              <div className="mb-6 relative z-10">
-                <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-                  {agent.description}
-                </p>
-              </div>
-
-              {/* Specialties */}
-              <div className="relative z-10">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Specializes in:
-                </h4>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  {agent.specialties.map((specialty, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center space-x-2 text-gray-600 dark:text-gray-300"
-                    >
-                      <div className={`w-2 h-2 bg-gradient-to-r ${agent.color} rounded-full`}></div>
-                      <span className="text-sm">{specialty}</span>
-                    </div>
-                  ))}
+                {/* Right: Action Button */}
+                <div className="lg:col-span-4 hidden lg:flex justify-end">
+                  <button
+                    onClick={() => setCurrentPage('knowledge')}
+                    className={`px-4 py-2 bg-gradient-to-r ${agent.color} text-white rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all whitespace-nowrap`}
+                  >
+                    Chat Now
+                  </button>
                 </div>
               </div>
-
-              {/* Hover effect overlay */}
-              <motion.div
-                className={`absolute inset-0 bg-gradient-to-r ${agent.color} opacity-0 hover:opacity-5 transition-opacity duration-300 rounded-3xl`}
-                whileHover={{ opacity: 0.05 }}
-              />
             </motion.div>
           ))}
         </div>
@@ -197,16 +201,16 @@ export default function AIAgents() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="bg-gradient-to-r from-purple-500 to-pink-600 rounded-3xl p-8 text-white text-center"
+          transition={{ delay: 0.3 }}
+          className="bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl p-5 text-white text-center"
         >
-          <h3 className="text-2xl font-bold mb-4">Ready to get started?</h3>
-          <p className="text-lg opacity-90 mb-6">
+          <h3 className="text-lg font-bold mb-2">Ready to get started?</h3>
+          <p className="text-sm opacity-90 mb-4">
             Choose any agent and start your conversation. They're here to support you 24/7.
           </p>
           <button
             onClick={() => setCurrentPage('knowledge')}
-            className="bg-white text-purple-600 px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all"
+            className="bg-white text-purple-600 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all"
           >
             Start Chatting
           </button>
