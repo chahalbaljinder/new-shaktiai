@@ -1,0 +1,9 @@
+[build]
+  builder = "nixpacks"
+
+[start]
+  cmd = "python start.py"
+
+[variables]
+  PORT = "8000"
+  PYTHONPATH = "/app"

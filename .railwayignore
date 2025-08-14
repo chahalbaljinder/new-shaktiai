@@ -1,0 +1,42 @@
+# Ignore unnecessary files and directories for Railway deployment
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Local development files
+.vscode/
+.idea/
+*.log
+
+# Documentation and scripts not needed for deployment
+docs/
+scripts/
+tests/
+install/
+legacy/
+
+# Frontend files (deploy separately)
+shakti-ai-nextjs/
+*.md
+*.bat
+*.ps1
+
+# Large files that might cause issues
+raw_pdfs/
+*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db

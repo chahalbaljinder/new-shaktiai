@@ -1,26 +1,37 @@
-streamlit
+# Core AI and LangChain dependencies
 python-dotenv
 langchain
 langchain-core
 google-generativeai
 pydantic
+
+# Database
+psycopg2-binary
+
+# PDF processing
 PyPDF2
 pdfplumber
-PyMuPDF
+
+# Vector store and ML
 sentence-transformers
 faiss-cpu
 numpy
 huggingface_hub
-SpeechRecognition
-pocketsphinx
-pyaudio
-pywhatkit
+
+# Email and communications
+email-validator
 phonenumbers
 yagmail
-psycopg2-binary
-fastapi
-uvicorn
-python-multipart
-email-validator
-pydub
-ffmpeg-python
+
+# Remove problematic packages for Railway deployment
+# streamlit - not needed for backend
+# SpeechRecognition - audio processing may fail on Railway
+# pocketsphinx - audio processing
+# pyaudio - audio processing, system dependencies
+# pywhatkit - may have system dependencies
+# pydub - audio processing
+# ffmpeg-python - requires ffmpeg binary
+# fastapi - using built-in HTTP server instead
+# uvicorn - not needed
+# python-multipart - not needed
+# PyMuPDF - may have system dependencies
