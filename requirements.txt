@@ -12,15 +12,18 @@ faiss-cpu
 numpy
 huggingface_hub
 SpeechRecognition
-pocketsphinx
-pyaudio
+# pocketsphinx  # Commented out as it can cause build issues on some platforms
+# pyaudio  # Commented out as it requires system audio libraries
 pywhatkit
 phonenumbers
 yagmail
 psycopg2-binary
-fastapi
-uvicorn
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
 python-multipart
 email-validator
 pydub
-ffmpeg-python
+# ffmpeg-python  # Using system ffmpeg instead
+requests
+aiofiles
+jinja2
