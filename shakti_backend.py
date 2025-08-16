@@ -19,16 +19,7 @@ try:
     AI_AVAILABLE = True
 except ImportError as e:
     print(f"❌ Error importing SHAKTI-AI: {e}")
-    print("🔧 Running in fallback mode without AI agents")
     AI_AVAILABLE = False
-    
-    # Create fallback function
-    def ask_shakti_ai(message, agent_type="general"):
-        return {
-            "response": f"Hello! I'm {agent_type} agent. Due to system configuration, I'm running in limited mode. Your message was: {message}",
-            "agent": agent_type,
-            "status": "fallback_mode"
-        }
 
 class RealAIHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
@@ -44,7 +35,7 @@ class RealAIHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path == '/' or self.path == '/health':
+        if self.path == '/':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
@@ -55,8 +46,7 @@ class RealAIHandler(BaseHTTPRequestHandler):
                 "message": f"SHAKTI-AI Backend ({status}) is running!", 
                 "status": "ok",
                 "ai_available": AI_AVAILABLE,
-                "timestamp": datetime.now().isoformat(),
-                "port": os.environ.get('PORT', 8000)
+                "timestamp": datetime.now().isoformat()
             }
             self.wfile.write(json.dumps(response).encode())
         elif self.path == '/api/wishes/list':
@@ -336,10 +326,6 @@ class RealAIHandler(BaseHTTPRequestHandler):
             raise
 
 def run_real_ai_backend():
-    # Get port from environment variable (Railway sets this automatically)
-    port = int(os.environ.get('PORT', 8000))
-    host = '0.0.0.0'  # Listen on all interfaces for cloud deployment
-    
     print("🚀 Starting SHAKTI-AI Real Backend with Actual Agents")
     print("==================================================")
     
@@ -353,7 +339,7 @@ def run_real_ai_backend():
         print("📚 Ensure knowledge base is properly set up")
     
     print("")
-    print(f"📍 Backend running at: http://{host}:{port}")
+    print("📍 Backend running at: http://localhost:8000")
     print("🌐 API endpoint: /api/agents/chat")
     print("🔗 Frontend should connect automatically")
     print("")
@@ -361,15 +347,11 @@ def run_real_ai_backend():
     print("")
     
     try:
-        server = HTTPServer((host, port), RealAIHandler)
-        print(f"✅ Server started successfully on {host}:{port}")
+        server = HTTPServer(('localhost', 8000), RealAIHandler)
         server.serve_forever()
     except KeyboardInterrupt:
         print("\n🛑 SHAKTI-AI backend stopped")
         server.shutdown()
-    except Exception as e:
-        print(f"❌ Server failed to start: {e}")
-        raise
 
 if __name__ == "__main__":
     run_real_ai_backend()
