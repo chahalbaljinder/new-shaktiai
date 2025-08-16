@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { Providers } from './providers'
 import { Toaster } from 'sonner'
+import SaheliChatbot from '@/components/SaheliChatbot'
 
 
 
@@ -31,6 +32,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toaster position="top-right" richColors closeButton />
+          <SaheliChatbot />
         </Providers>
       </body>
     </html>
