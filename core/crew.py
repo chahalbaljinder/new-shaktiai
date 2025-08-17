@@ -351,5 +351,12 @@ def ask_shakti_ai(query: str, agent_types: List[str] = None, age: Optional[int] 
         agent_types: Optional list of agent types to use. If None, all agents will be used.
                     Options: "maternal", "reproductive", "mental", "legal", "feminist"
     """
-    shakti = ShaktiAI()
-    return shakti.process_query(query, agent_types, age)
+    # Use cached global instance to avoid reloading knowledge base
+    global _shakti_ai_instance
+    if _shakti_ai_instance is None:
+        _shakti_ai_instance = ShaktiAI()
+    
+    return _shakti_ai_instance.process_query(query, agent_types, age)
+
+# Global cached instance - loaded once when module is imported
+_shakti_ai_instance = None
