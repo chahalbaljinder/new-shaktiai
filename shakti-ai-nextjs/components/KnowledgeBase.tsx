@@ -6,6 +6,7 @@ import { Send, Mic, MicOff, Bot, Clock, Loader2 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { useAgents, useChatWithAgent, useSpeechToText, useDirectSpeechToText } from '@/lib/api/hooks'
 import { toast } from 'sonner'
+import MarkdownRenderer from './MarkdownRenderer'
 
 interface Agent {
   id: string
@@ -497,7 +498,7 @@ export default function KnowledgeBase() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white overflow-hidden">
+    <div className="h-screen max-h-screen flex flex-col bg-white overflow-hidden">
       {/* Header */}
       <div className="border-b border-gray-200 p-4 lg:p-6 flex-shrink-0">
         <div className="max-w-4xl mx-auto">
@@ -573,8 +574,15 @@ export default function KnowledgeBase() {
                       {message.agentName}
                     </div>
                   )}
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {message.content}
+                  <div className="text-sm leading-relaxed">
+                    {message.role === 'agent' ? (
+                      <MarkdownRenderer 
+                        content={message.content} 
+                        className="text-gray-900"
+                      />
+                    ) : (
+                      <div className="whitespace-pre-wrap">{message.content}</div>
+                    )}
                   </div>
                   {message.sources && message.sources.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-gray-200">

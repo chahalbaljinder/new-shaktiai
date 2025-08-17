@@ -67,7 +67,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
+    <div className="flex min-h-screen max-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 overflow-hidden">
       {/* Sidebar */}
       <Sidebar />
       
@@ -75,7 +75,11 @@ export default function HomePage() {
       <main 
         className={`flex-1 transition-all duration-300 ease-in-out ${
           sidebarOpen ? 'ml-0' : 'ml-0'
-        } lg:ml-0`}
+        } lg:ml-0 overflow-hidden`}
+        style={{
+          height: '100vh',
+          maxHeight: '100vh'
+        }}
       >
         <div className="min-h-screen overflow-y-auto">
           <AnimatePresence mode="wait">

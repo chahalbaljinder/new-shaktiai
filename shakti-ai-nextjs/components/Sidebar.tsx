@@ -61,7 +61,11 @@ export default function Sidebar() {
         initial={false}
         animate={{ x: sidebarOpen ? 0 : -280 }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed left-0 top-0 h-full w-70 bg-white border-r border-gray-200 shadow-xl z-50 lg:relative lg:translate-x-0"
+        className="fixed left-0 top-0 h-screen min-h-screen w-70 bg-white border-r border-gray-200 shadow-xl z-50 lg:relative lg:translate-x-0 lg:h-screen"
+        style={{
+          height: '100vh',
+          minHeight: '100vh'
+        }}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
