@@ -17,6 +17,7 @@ sentence-transformers
 faiss-cpu
 numpy
 huggingface_hub
+<<<<<<< HEAD
 
 # Email and communications
 email-validator
@@ -35,3 +36,21 @@ yagmail
 # uvicorn - not needed
 # python-multipart - not needed
 # PyMuPDF - may have system dependencies
+=======
+SpeechRecognition
+# pocketsphinx  # Commented out as it can cause build issues on some platforms
+# pyaudio  # Commented out as it requires system audio libraries
+pywhatkit
+phonenumbers
+yagmail
+psycopg2-binary
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+python-multipart
+email-validator
+pydub
+# ffmpeg-python  # Using system ffmpeg instead
+requests
+aiofiles
+jinja2
+>>>>>>> fc21d1463efc716378951bfe7b5d5c773bbe3763
