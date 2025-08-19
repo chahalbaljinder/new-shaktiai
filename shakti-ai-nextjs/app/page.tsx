@@ -67,35 +67,27 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex min-h-screen max-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 overflow-hidden">
+    <div className="flex h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 overflow-hidden">
       {/* Sidebar */}
       <Sidebar />
       
       {/* Main Content */}
       <main 
-        className={`flex-1 transition-all duration-300 ease-in-out ${
-          sidebarOpen ? 'ml-0' : 'ml-0'
-        } lg:ml-0 overflow-hidden`}
-        style={{
-          height: '100vh',
-          maxHeight: '100vh'
-        }}
+        className={`flex-1 transition-all duration-300 ease-in-out lg:ml-0 overflow-y-auto`}
       >
-        <div className="min-h-screen overflow-y-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentPage}
-              initial="initial"
-              animate="in"
-              exit="out"
-              variants={pageVariants}
-              transition={pageTransition}
-              className="min-h-screen"
-            >
-              {renderCurrentPage()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPage}
+            initial="initial"
+            animate="in"
+            exit="out"
+            variants={pageVariants}
+            transition={pageTransition}
+            className="p-4 sm:p-6 lg:p-8"
+          >
+            {renderCurrentPage()}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Mobile Overlay */}
