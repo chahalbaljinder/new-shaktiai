@@ -24,9 +24,9 @@ interface SettingsProps {
 
 export default function Settings({}: SettingsProps) {
   const [profile, setProfile] = useState({
-    displayName: 'Sarah Johnson',
-    email: 'sarah@example.com',
-    ageRange: '25-30',
+    displayName: 'Anjali Sharma',
+    email: 'anjaliisharmaa15@gmail.com',
+    ageRange: '18-25',
     language: 'english',
     location: 'New Delhi, India'
   })
