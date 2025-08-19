@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:15
+    container_name: shakti-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-shakti_ai_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shakti-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-shakti_ai_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./shakti-ai-nextjs
+      dockerfile: Dockerfile
+    container_name: shakti-frontend
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    environment:
+      NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://localhost:8000}"
+      PYTHON_SERVICE_URL: "${PYTHON_SERVICE_URL:-http://backend:8000}"
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

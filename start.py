@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Startup script for Railway deployment
+Startup script
 """
 import os
 import sys
 
 def main():
-    print("🚀 Railway Deployment: Starting SHAKTI-AI Backend")
+    print("🚀 Starting SHAKTI-AI Backend")
     print(f"📍 Port: {os.environ.get('PORT', '8000')}")
     print(f"🐍 Python: {sys.version}")
     print(f"📁 Working Directory: {os.getcwd()}")

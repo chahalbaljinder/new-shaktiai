@@ -186,14 +186,16 @@ Icon?
 .Trash-*
 
 # Deployment and build artifacts
-.railway/
+# Docker
+docker-compose.override.yml
+*.tar
 .vercel/
 .netlify/
-.dockerignore
-docker-compose.yml
-docker-compose.override.yml
-Dockerfile*
-*.dockerfile
+# Keep Docker files tracked
+#!.dockerignore
+#!docker-compose.yml
+#!Dockerfile*
+#!*.dockerfile
 
 # Health checks and monitoring
 health_check.py

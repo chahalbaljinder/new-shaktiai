@@ -1,21 +1,5 @@
 {
-<<<<<<< HEAD
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "nixpacks"
-  },
-  "deploy": {
-    "startCommand": "python start.py",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-=======
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "numReplicas": 1,
-    "sleepApplication": false,
-    "restartPolicyType": "ON_FAILURE"
->>>>>>> fc21d1463efc716378951bfe7b5d5c773bbe3763
-  }
+  "deprecated": true,
+  "note": "Railway configuration is deprecated. Use Docker-based deployment.",
+  "see": "DEPLOYMENT_GUIDE.md"
 }

@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-python-3.11
-=======
-python-3.11.9
->>>>>>> fc21d1463efc716378951bfe7b5d5c773bbe3763
+Deprecated: runtime.txt is not used. Use Docker images for runtime.

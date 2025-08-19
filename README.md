@@ -134,6 +134,17 @@ cp .env.example .env
 # Edit .env with your PostgreSQL credentials
 ```
 
+## Docker (recommended for deployment)
+
+See `DEPLOYMENT_GUIDE.md` for a complete Docker setup. Quick start:
+
+```powershell
+docker compose up -d --build
+```
+
+Then open http://localhost:3000 for the frontend and http://localhost:8000/health for the backend.
+```
+
 ### 5️⃣ Launch Application
 ```bash
 streamlit run app.py

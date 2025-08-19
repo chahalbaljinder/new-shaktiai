@@ -1,9 +1,2 @@
-[build]
-  builder = "nixpacks"
-
-[start]
-  cmd = "python start.py"
-
-[variables]
-  PORT = "8000"
-  PYTHONPATH = "/app"
+## Deprecated: Railway configuration is no longer used.
+## Please use Docker for deployment (see DEPLOYMENT_GUIDE.md).
