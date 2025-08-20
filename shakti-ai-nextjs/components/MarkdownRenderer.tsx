@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 
 interface MarkdownRendererProps {
   content: string
@@ -12,7 +12,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
   const renderMarkdown = (text: string) => {
     // Split text by lines to handle formatting
     const lines = text.split('\n')
-    const elements: React.ReactNode[] = []
+    const elements: ReactNode[] = []
     
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i]
@@ -89,7 +89,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
   
   // Handle inline formatting like **bold** and *italic*
   const renderInlineFormatting = (text: string) => {
-    const parts: React.ReactNode[] = []
+    const parts: ReactNode[] = []
     let currentIndex = 0
     
     // Handle **bold** formatting
@@ -124,7 +124,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
   
   // Handle *italic* formatting
   const renderItalicFormatting = (text: string, baseKey: number = 0) => {
-    const parts: React.ReactNode[] = []
+    const parts: ReactNode[] = []
     let currentIndex = 0
     
     // Handle *italic* formatting (but not **bold**)
