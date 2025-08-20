@@ -23,8 +23,8 @@ except ImportError as e:
 
 class RealAIHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
-        # Suppress default HTTP logging to keep output clean
-        pass
+        # Custom logging to see requests
+        print(f"🌐 {format % args}")
         
     def do_OPTIONS(self):
         # Handle CORS preflight
@@ -84,10 +84,17 @@ class RealAIHandler(BaseHTTPRequestHandler):
                     
                     # Call the real SHAKTI-AI function
                     print(f"🤖 Calling SHAKTI-AI with agents: {shakti_agents}")
-                    ai_response = ask_shakti_ai(message, shakti_agents)
-                    
-                    print(f"✅ Real AI response received ({len(ai_response)} chars)")
-                    response_text = ai_response
+                    try:
+                        ai_response = ask_shakti_ai(message, shakti_agents)
+                        print(f"✅ Real AI response received ({len(ai_response)} chars)")
+                        response_text = ai_response
+                    except Exception as ai_error:
+                        print(f"🚨 SHAKTI-AI Error: {ai_error}")
+                        print(f"🔍 Error Type: {type(ai_error).__name__}")
+                        import traceback
+                        print(f"📍 Full Traceback:")
+                        traceback.print_exc()
+                        response_text = f"⚠️ AI Agent Error: {str(ai_error)}\n\nThe AI agents are having technical difficulties. This may be due to a configuration or dependency issue."
                     
                 else:
                     response_text = f"❌ AI agents are not available. Error during import. Please check the core.crew module."
@@ -346,12 +353,22 @@ def run_real_ai_backend():
     print("Press Ctrl+C to stop the server")
     print("")
     
+    server = None
     try:
         server = HTTPServer(('localhost', 8000), RealAIHandler)
+        print("🚀 Server initialized successfully")
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\n🛑 SHAKTI-AI backend stopped")
-        server.shutdown()
+        print("\n🛑 SHAKTI-AI backend stopped by user")
+    except Exception as e:
+        print(f"\n💥 Server error: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        if server:
+            print("🔧 Shutting down server...")
+            server.shutdown()
+            server.server_close()
 
 if __name__ == "__main__":
     run_real_ai_backend()
