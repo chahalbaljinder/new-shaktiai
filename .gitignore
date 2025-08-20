@@ -66,7 +66,7 @@ venv.bak/
 .conda/
 
 # Document files (keep some for documentation)
-*.pdf
+# *.pdf
 *.doc
 *.docx
 *.ppt
