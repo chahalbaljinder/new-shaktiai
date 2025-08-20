@@ -3,7 +3,7 @@
 This guide shows how to run the full stack (FastAPI backend + Next.js frontend + Postgres) using Docker.
 
 ## Overview
-- Backend: FastAPI in `backend_service.py` served by Uvicorn
+- Backend: Simple HTTP server in `shakti_backend.py` with direct AI integration
 - Frontend: Next.js in `shakti-ai-nextjs`
 - Database: PostgreSQL 15
 
@@ -44,7 +44,7 @@ Services:
 ## Production notes
 - Use volumes for persistent Postgres data.
 - Set real secrets in `.env` or your orchestrator.
-- Configure CORS in `backend_service.py` for your domains.
+- Configure CORS in `shakti_backend.py` for your domains.
 
 ## Troubleshooting
 - If backend can’t reach DB, check `DB_HOST=db` and that the `db` service is healthy.

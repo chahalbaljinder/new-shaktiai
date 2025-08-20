@@ -5,7 +5,7 @@
 ### ✅ **Complete Backend Integration**
 
 1. **AI Agents & Knowledge Base**
-   - Created FastAPI backend service (`backend_service.py`) that wraps existing Python functionality
+   - Created HTTP backend service (`shakti_backend.py`) that connects directly to existing Python functionality
    - Integrated real AI agent conversations using the existing SHAKTI-AI system
    - Connected to the knowledge base with RAG functionality and citations
    - All 5 agents (Maaya, Gynika, Meher, Nyaya, Vaanya) fully functional
@@ -81,7 +81,7 @@ shakti-ai-nextjs/               # Next.js frontend
 │   └── store.ts               # Zustand state management
 └── package.json               # Dependencies and scripts
 
-backend_service.py              # FastAPI service wrapping Python backend
+shakti_backend.py               # HTTP service connecting to Python backend
 INTEGRATION_GUIDE.md            # Complete setup instructions
 start_app.bat                   # Quick start script for Windows
 ```
@@ -91,7 +91,7 @@ start_app.bat                   # Quick start script for Windows
 1. **Start Backend Service**:
    ```bash
    cd "C:\Users\balli\Desktop\new shaktiai"
-   python -m uvicorn backend_service:app --host 0.0.0.0 --port 8000 --reload
+   python shakti_backend.py
    ```
 
 2. **Start Frontend**:

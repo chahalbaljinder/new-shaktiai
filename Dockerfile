@@ -12,14 +12,15 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
-COPY backend_service.py ./
+COPY shakti_backend.py ./
 COPY core ./core
 COPY database ./database
 COPY utils ./utils
 COPY knowledge_base ./knowledge_base
+COPY wishes_data.json ./
 
 # Expose API port
 EXPOSE 8000
 
-# Default command uses uvicorn to serve FastAPI app
-CMD ["python", "-m", "uvicorn", "backend_service:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command uses direct Python execution for HTTP server
+CMD ["python", "shakti_backend.py"]
