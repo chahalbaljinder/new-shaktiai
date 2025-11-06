@@ -3,37 +3,33 @@ const nextConfig = {
   images: {
     domains: ['images.unsplash.com', 'ui-avatars.com'],
   },
+  
+  // Simplified webpack config to avoid issues
   webpack: (config, { isServer, dev }) => {
-    // Fix for chunk loading errors
-    if (!isServer && !dev) {
-      config.output.publicPath = '/_next/'
+    // Fix module resolution for Windows paths with spaces
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname),
     }
     
-    // Improve chunk loading reliability
-    config.output.crossOriginLoading = 'anonymous'
-    
-    // Configure split chunks for better loading
+    // Increase chunk load timeout for slower systems
     if (!isServer) {
-      config.optimization.splitChunks.cacheGroups = {
-        ...config.optimization.splitChunks.cacheGroups,
-        commons: {
-          name: 'commons',
-          chunks: 'all',
-          minChunks: 2,
-          enforce: true,
-        },
-      }
+      config.output.chunkLoadTimeout = 120000 // 2 minutes
     }
     
     return config
   },
-  // Disable static optimization for layout to prevent chunk loading issues
+  
+  // Minimal experimental features
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog'],
-    runtime: undefined,
+    optimizePackageImports: ['lucide-react'],
   },
-  // Ensure proper asset serving
-  assetPrefix: process.env.NODE_ENV === 'production' ? '' : undefined,
+  
+  // Disable source maps in development to reduce complexity
+  productionBrowserSourceMaps: false,
+  
+  // Ensure proper serving
+  trailingSlash: false,
 }
 
 module.exports = nextConfig
