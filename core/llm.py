@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from langchain_core.language_models.llms import LLM
 from typing import Any, Dict, List, Optional
-from pydantic import Field, PrivateAttr
+from pydantic import Field, ConfigDict
 import google.generativeai as genai
 
 # Load environment variables
@@ -11,24 +11,30 @@ load_dotenv()
 class GeminiLLM(LLM):
     """Implementation of Google's Gemini 2.0 Flash API."""
     
-    model_name: str = Field(default="gemini-2.0-flash")
-    temperature: float = Field(default=0.7)
-    max_tokens: int = Field(default=4096)
-    api_key: str = Field(default=os.getenv("GOOGLE_API_KEY"))
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     
-    # Define a private attribute for the model
-    _model: Any = PrivateAttr(default=None)
+    model_name: str = "gemini-2.0-flash"
+    temperature: float = 0.7
+    max_tokens: int = 4096
+    api_key: str = ""
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        
+        # Set default values if not provided
+        if not self.api_key:
+            self.api_key = os.getenv("GOOGLE_API_KEY", "")
+        
         # Initialize the Gemini API
         genai.configure(api_key=self.api_key)
-        self._model = genai.GenerativeModel(model_name=self.model_name)
+        # Store model as a regular attribute instead of field
+        object.__setattr__(self, '_model', genai.GenerativeModel(model_name=self.model_name))
     
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
         """Execute the LLM call."""
         try:
-            response = self._model.generate_content(
+            model = object.__getattribute__(self, '_model')
+            response = model.generate_content(
                 prompt,
                 generation_config={
                     "temperature": self.temperature,

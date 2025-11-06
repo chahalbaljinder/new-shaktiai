@@ -33,7 +33,7 @@ This document provides instructions for running the fully integrated SHAKTI-AI a
 1. **Start the Python Backend Service**
    ```bash
    # In the root directory
-   python -m uvicorn backend_service:app --host 0.0.0.0 --port 8000 --reload
+   python shakti_backend.py
    ```
    This starts the FastAPI service on http://localhost:8000
 
@@ -76,7 +76,7 @@ This document provides instructions for running the fully integrated SHAKTI-AI a
 
 ### Backend Integration
 
-The application uses a FastAPI backend service (`backend_service.py`) that wraps the existing Python functionality:
+The application uses a simple HTTP backend service (`shakti_backend.py`) that connects directly to the existing Python functionality:
 
 - **AI Agents**: Integrates with `core/crew.py` for real AI responses
 - **Voice Processing**: Uses `core/get_voice_input.py` for speech recognition
@@ -119,7 +119,7 @@ The Next.js frontend uses:
 
 2. **Frontend Can't Connect to Backend**
    - Ensure backend service is running on port 8000
-   - Check CORS settings in `backend_service.py`
+   - Check CORS settings in `shakti_backend.py`
    - Verify `NEXT_PUBLIC_API_URL` in `.env.local`
 
 3. **Voice Features Not Working**

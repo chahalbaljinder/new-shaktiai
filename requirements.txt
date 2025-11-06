@@ -17,40 +17,25 @@ sentence-transformers
 faiss-cpu
 numpy
 huggingface_hub
-<<<<<<< HEAD
 
-# Email and communications
+# Communications and utilities
 email-validator
 phonenumbers
 yagmail
+requests
+aiofiles
+jinja2
+streamlit
 
-# Remove problematic packages for Railway deployment
-# streamlit - not needed for backend
-# SpeechRecognition - audio processing may fail on Railway
-# pocketsphinx - audio processing
-# pyaudio - audio processing, system dependencies
-# pywhatkit - may have system dependencies
-# pydub - audio processing
-# ffmpeg-python - requires ffmpeg binary
-# fastapi - using built-in HTTP server instead
-# uvicorn - not needed
-# python-multipart - not needed
-# PyMuPDF - may have system dependencies
-=======
+# Voice and misc
 SpeechRecognition
 # pocketsphinx  # Commented out as it can cause build issues on some platforms
 # pyaudio  # Commented out as it requires system audio libraries
 pywhatkit
-phonenumbers
-yagmail
-psycopg2-binary
+pydub
+# ffmpeg-python  # Using system ffmpeg instead
+
+# Web server
 fastapi>=0.104.1
 uvicorn[standard]>=0.24.0
 python-multipart
-email-validator
-pydub
-# ffmpeg-python  # Using system ffmpeg instead
-requests
-aiofiles
-jinja2
->>>>>>> fc21d1463efc716378951bfe7b5d5c773bbe3763

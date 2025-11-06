@@ -1,23 +1,7 @@
 # Ignore unnecessary files and directories for Railway deployment
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-.coverage
-.pytest_cache/
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Local development files
-.vscode/
-.idea/
+# Deprecated: Railway is no longer used for deployment.
+# This file is kept only to avoid confusion in older setups.
+# See DEPLOYMENT_GUIDE.md for Docker-based deployment.
 *.log
 
 # Documentation and scripts not needed for deployment

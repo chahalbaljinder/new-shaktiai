@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { Providers } from './providers'
 import { Toaster } from 'sonner'
 import SaheliChatbot from '@/components/SaheliChatbot'
+import type { ReactNode } from 'react'
 
 
 
@@ -21,11 +22,11 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+interface RootLayoutProps {
+  children: ReactNode
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} h-full antialiased`}>
