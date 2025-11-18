@@ -40,11 +40,11 @@ except ImportError as e:
     email_service = None
 
 try:
-    from core.crew import ask_shakti_ai
-    logger.info("Successfully imported ask_shakti_ai")
+    from core.crew import ask_apex
+    logger.info("Successfully imported ask_apex")
 except ImportError as e:
-    logger.error(f"Failed to import ask_shakti_ai: {e}")
-    ask_shakti_ai = None
+    logger.error(f"Failed to import ask_apex: {e}")
+    ask_apex = None
 
 try:
     from core.get_voice_input import get_voice_input
@@ -67,7 +67,7 @@ except ImportError as e:
     logger.error(f"Failed to import speech_recognition: {e}")
     sr = None
 
-app = FastAPI(title="SHAKTI-AI Backend Service", version="1.0.0")
+app = FastAPI(title="AOEX Backend Service", version="1.0.0")
 
 # Configure CORS
 app.add_middleware(
@@ -111,7 +111,7 @@ class ShareWishRequest(BaseModel):
     wish_id: int
     method: str  # "email" or "whatsapp"
     recipient: str
-    sender_name: Optional[str] = "SHAKTI-AI User"
+    sender_name: Optional[str] = "APEX User"
 
 class TTSRequest(BaseModel):
     text: str
@@ -140,35 +140,97 @@ async def health_check():
 async def get_agents():
     """Get list of available AI agents."""
     agents = {
-        "maternal": {
-            "name": "Maaya",
-            "role": "Maternal Health Nurse",
-            "expertise": "pregnancy, childbirth, and baby care",
-            "specialties": ["pregnancy", "prenatal care", "childbirth", "postpartum", "breastfeeding", "infant care"]
+        "legal-guide": {
+            "name": "Athena",
+            "role": "Policy & Procedure Agent",
+            "expertise": "government HR policies, legal regulations, and official procedures for women scientists in Indian government organizations",
+            "specialties": [
+                            # Leave Policies
+                            "maternity leave", "child care leave", "CCL", "paternity leave", 
+                            "medical leave", "study leave", "earned leave", "casual leave",
+                            
+                            # Transfer & Posting Policies  
+                            "transfer guidelines", "spouse ground transfer", "hardship posting",
+                            "family station transfer", "compassionate transfer", "mutual transfer",
+                            
+                            # Legal Rights & Protection
+                            "POSH Act", "sexual harassment", "workplace harassment", 
+                            "gender discrimination", "equal opportunity", "women's rights at workplace",
+                            
+                            # Career & Promotion
+                            "promotion policies", "career progression", "performance appraisal",
+                            "project allocation", "research opportunities", "leadership positions",
+                            
+                            # Grievance & Redressal
+                            "grievance filing", "complaint procedures", "appeals process", 
+                            "disciplinary action", "vigilance matters", "administrative redressal"
+                        ]
         },
-        "reproductive": {
-            "name": "Gynika",
-            "role": "Reproductive Health Advisor",
-            "expertise": "menstruation, puberty, and contraception",
-            "specialties": ["menstruation", "puberty", "contraception", "fertility", "reproductive health", "sexual health"]
+        "wellness": {
+            "name": "Asha",
+            "role": "Wellness & Support Agent",
+            "expertise": "mental wellness, work-life balance, and confidential emotional support for women scientists in government organizations",
+            "specialties": [
+                            # Mental Wellness & Stress Management
+                            "stress management", "anxiety", "burnout prevention", "emotional support",
+                            "mental health resources", "counseling referrals", "crisis intervention",
+                            
+                            # Work-Life Integration
+                            "work-life balance", "time management", "career-family balance",
+                            "dual career couples", "childcare support", "eldercare responsibilities",
+                            
+                            # Workplace Wellness
+                            "workplace stress", "professional isolation", "imposter syndrome",
+                            "confidence building", "peer support networks", "mentorship guidance",
+                            
+                            # Safety & Confidential Support
+                            "workplace harassment support", "emotional trauma", "safety planning",
+                            "anonymous reporting", "confidential counseling", "victim support",
+                            
+                            # Empowerment & Motivation  
+                            "self-advocacy", "assertiveness training", "communication skills",
+                            "boundary setting", "resilience building", "motivational support",
+                            
+                            # Specialized Support for Scientists
+                            "research stress", "publication pressure", "conference anxiety",
+                            "presentation skills", "networking challenges", "career transitions"
+                        ]
         },
-        "mental": {
-            "name": "Meher",
-            "role": "Mental Health Counselor",
-            "expertise": "trauma, anxiety, and abuse recovery",
-            "specialties": ["anxiety", "depression", "trauma", "PTSD", "domestic violence", "mental wellness"]
-        },
-        "legal": {
-            "name": "Nyaya",
-            "role": "Legal Rights Advisor",
-            "expertise": "Indian laws related to women's rights",
-            "specialties": ["women's rights", "family law", "workplace harassment", "domestic violence law", "property rights"]
-        },
-        "feminist": {
-            "name": "Vaanya",
-            "role": "Feminist Health Educator",
-            "expertise": "menopause, hormonal health, and women's empowerment",
-            "specialties": ["menopause", "hormonal health", "women's empowerment", "body autonomy", "health advocacy"]
+        "documentation": {
+            "name": "Scribe",
+            "role": "Documentation & Workflow Agent",
+            "expertise": "automated document generation, form assistance, and procedural guidance for women scientists in government organizations",
+            "specialties": [
+                            # Document Generation & Forms
+                            "leave applications", "transfer requests", "grievance forms", "appeal letters",
+                            "maternity leave forms", "CCL applications", "medical leave documentation",
+                            "official correspondence", "policy interpretation documents", "legal notices",
+                            
+                            # Workflow & Process Guidance
+                            "step-by-step procedures", "submission guidelines", "approval workflows",
+                            "document checklists", "required attachments", "filing deadlines",
+                            "follow-up procedures", "status tracking", "escalation protocols",
+                            
+                            # Administrative Navigation
+                            "office procedures", "bureaucratic processes", "authority identification",
+                            "submission channels", "reference number tracking", "timeline management",
+                            "reminder systems", "progress monitoring", "case documentation",
+                            
+                            # Specialized Government Forms
+                            "POSH complaint forms", "vigilance matter reports", "transfer applications",
+                            "promotion documentation", "performance appraisal submissions", 
+                            "research proposal formats", "project allocation requests",
+                            
+                            # Compliance & Legal Documentation
+                            "policy compliance forms", "statutory requirements", "legal documentation",
+                            "evidence compilation", "witness statements", "incident reports",
+                            "safety documentation", "confidentiality agreements",
+                            
+                            # Communication & Correspondence
+                            "official email templates", "letter formatting", "petition drafting",
+                            "meeting minutes", "formal requests", "acknowledgment receipts",
+                            "status inquiry letters", "clarification requests"
+                        ]
         }
     }
     return {"agents": agents}
@@ -177,22 +239,20 @@ async def get_agents():
 async def chat_with_agent(request: ChatRequest):
     """Chat with a specific AI agent."""
     try:
-        if not ask_shakti_ai:
+        if not ask_apex:
             raise HTTPException(status_code=503, detail="AI agent system not available")
         
         # Call the existing SHAKTI-AI system with a single agent
-        response = ask_shakti_ai(request.message, [request.agent_type])
+        response = ask_apex(request.message, [request.agent_type])
         
         # Get agent name
         agent_names = {
-            "maternal": "Maaya",
-            "reproductive": "Gynika",
-            "mental": "Meher",
-            "legal": "Nyaya",
-            "feminist": "Vaanya"
+            "legal-guide": "Athena",
+            "wellness": "Asha",
+            "documentation": "Scribe"
         }
         
-        agent_name = agent_names.get(request.agent_type, "SHAKTI-AI")
+        agent_name = agent_names.get(request.agent_type, "APEX")
         
         logger.info(f"Successfully processed chat request for agent: {agent_name}")
         
@@ -521,47 +581,109 @@ def enhance_medical_context(text):
     text_lower = text.lower()
     enhanced = text
     
-    # Fix common agent name misrecognitions
+    # Fix common APEX agent name misrecognitions
     agent_corrections = {
-        "maya": "Maaya",
-        "maa": "Maaya", 
-        "maia": "Maaya",
-        "gyneka": "Gynika",
-        "genika": "Gynika",
-        "mehir": "Meher",
-        "meer": "Meher",
-        "nyya": "Nyaya",
-        "naya": "Nyaya",
-        "vanya": "Vaanya",
-        "vania": "Vaanya",
-        "shakti ai": "SHAKTI-AI",
-        "shakthi": "SHAKTI"
+        # Athena variations
+        "atena": "Athena",
+        "athina": "Athena", 
+        "athena": "Athena",
+        "policy agent": "Athena",
+        "procedure agent": "Athena",
+        
+        # Asha variations
+        "asa": "Asha",
+        "asha": "Asha",
+        "wellness agent": "Asha",
+        "support agent": "Asha",
+        "counselor": "Asha",
+        
+        # Scribe variations
+        "scryb": "Scribe",
+        "scribe": "Scribe", 
+        "documentation agent": "Scribe",
+        "workflow agent": "Scribe",
+        "document agent": "Scribe",
+        
+        # Project names
+        "apeks": "Apex",
+        "apex": "Apex",
+        "project apex": "Project Apex",
+        "apex ai": "APEX-AI"
     }
     
     for incorrect, correct in agent_corrections.items():
         pattern = r'\b' + re.escape(incorrect) + r'\b'
         enhanced = re.sub(pattern, correct, enhanced, flags=re.IGNORECASE)
     
-    # Fix common medical term misrecognitions
-    medical_corrections = {
-        "pregency": "pregnancy",
-        "pregant": "pregnant",
-        "menstration": "menstruation",
-        "periode": "periods",
-        "contraceptive": "contraception",
-        "menapose": "menopause",
-        "hormons": "hormones",
-        "bledding": "bleeding",
-        "nausia": "nausea",
-        "dizy": "dizzy",
-        "breastfeding": "breastfeeding",
-        "ovulaion": "ovulation",
-        "fertillity": "fertility",
+    # Fix common government policy term misrecognitions
+    policy_corrections = {
+        # Leave Policies
+        "matarnity": "maternity",
+        "maternaty": "maternity",
+        "ccell": "CCL",
+        "ccl": "CCL",
+        "paternaty": "paternity",
+        "medicol": "medical",
+        "compassionet": "compassionate",
+        
+        # Transfer & Posting
+        "transfere": "transfer",
+        "posteng": "posting",
+        "hardshep": "hardship",
+        "mutal": "mutual",
+        
+        # Legal Rights & Protection
+        "posh": "POSH",
+        "harrasment": "harassment",
+        "harrassment": "harassment",
+        "discriminashun": "discrimination",
+        "greevance": "grievance",
+        "greevans": "grievance",
+        "complent": "complaint",
+        "complaing": "complaint",
+        
+        # Career & Promotion
+        "promoshun": "promotion",
+        "progreshun": "progression",
+        "appraisel": "appraisal",
+        "allocashun": "allocation",
+        "oppertunity": "opportunity",
+        "ledarship": "leadership",
+        "scientest": "scientist",
+        
+        # Organizations
+        "drdo": "DRDO",
+        "isro": "ISRO",
+        "csir": "CSIR",
+        "goverment": "government",
+        "govarnment": "government",
+        "organistion": "organization",
+        "departmant": "department",
+        
+        # Wellness & Support
         "anxiaty": "anxiety",
-        "harrasment": "harassment"
+        "burnot": "burnout",
+        "counsoling": "counseling",
+        "counceling": "counseling",
+        "confedential": "confidential",
+        "anonimous": "anonymous",
+        "mentol": "mental",
+        
+        # Documentation & Procedures
+        "aplicashun": "application",
+        "documantation": "documentation",
+        "proceedure": "procedure",
+        "workflo": "workflow",
+        "submision": "submission",
+        "aproval": "approval",
+        "circuler": "circular",
+        "gydelines": "guidelines",
+        "regulashuns": "regulations",
+        "statatory": "statutory",
+        "complience": "compliance"
     }
     
-    for incorrect, correct in medical_corrections.items():
+    for incorrect, correct in policy_corrections.items():
         pattern = r'\b' + re.escape(incorrect) + r'\b'
         enhanced = re.sub(pattern, correct, enhanced, flags=re.IGNORECASE)
     
@@ -674,7 +796,7 @@ async def send_wish_via_email(recipient: str, wish_id: int, sender_name: str):
         body = f"Hello,\n\nYou have received a new wish from {sender_name}.\n\n"
         body += f"Title: {wish['title']}\n\n"
         body += f"Content: {wish['content']}\n\n"
-        body += "Best regards,\nSHAKTI-AI"
+        body += "Best regards,\nAPEX"
         
         # Send the email (using a dummy SMTP server for now)
         smtp_server = "smtp.example.com"
@@ -779,13 +901,13 @@ def generate_whatsapp_share_url(wish_content, phone_number, sender_name="SHAKTI-
 My wishes and thoughts:
 {wish_content}
 
-This message was sent securely through SHAKTI-AI, a platform that supports women's health and well-being.
+This message was sent securely through APEX, a platform that supports Indian women scientists' personal and professional life.
 
 With care ❤️
 
 ---
 Shared on: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
-SHAKTI-AI: For every woman, every phase, every fight.
+APEX: For every woman, every phase, every fight.
 """
         
         # URL encode the message
