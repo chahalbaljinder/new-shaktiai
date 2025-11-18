@@ -34,7 +34,7 @@ export default function HomePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="text-xl text-purple-600">Loading SHAKTI-AI...</div>
+        <div className="text-xl text-purple-600">Loading APEX...</div>
       </div>
     )
   }
@@ -52,7 +52,7 @@ export default function HomePage() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard userName="Shakti" />
+        return <Dashboard userName="Apex" />
       case 'knowledge':
         return <KnowledgeBase />
       case 'wishes':
@@ -62,7 +62,7 @@ export default function HomePage() {
       case 'agents':
         return <AIAgents />
       default:
-        return <Dashboard userName="Shakti" />
+        return <Dashboard userName="Apex" />
     }
   }
 

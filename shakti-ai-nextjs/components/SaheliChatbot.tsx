@@ -27,7 +27,7 @@ const SaheliChatbot: React.FC = () => {
       case '/':
       case '/dashboard':
         return {
-          welcome: "Welcome to SHAKTI-AI! I'm Saheli, your personal guide. How can I help you explore our health experts today? 🌟",
+          welcome: "Welcome to Project APEX! I'm Saheli, your personal guide. How can I help you navigate our AI experts for women scientists today? 🌟",
           suggestions: [
             { label: "Choose an Expert", action: () => handleQuickResponse("How do I choose the right expert?") },
             { label: "Voice Input", action: () => handleQuickResponse("How does voice input work?") },
@@ -55,7 +55,7 @@ const SaheliChatbot: React.FC = () => {
         };
       default:
         return {
-          welcome: "Hi! I'm Saheli, your SHAKTI-AI guide. How can I assist you today? 🌟",
+          welcome: "Hi! I'm Saheli, your APEX guide. How can I assist you today? 🌟",
           suggestions: [
             { label: "Get Started", action: () => handleQuickResponse("How do I get started?") },
             { label: "Choose Expert", action: () => handleQuickResponse("How do I choose the right expert?") },

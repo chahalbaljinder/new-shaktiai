@@ -11,10 +11,10 @@ import type { ReactNode } from 'react'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'SHAKTI-AI - Your AI Wellness Companion',
-  description: 'AI-powered support for women\'s health, legal rights, and well-being',
-  keywords: ['AI', 'health', 'wellness', 'women', 'support', 'mental health', 'legal rights'],
-  authors: [{ name: 'SHAKTI-AI Team' }],
+  title: 'Project APEX - AI Companion for Women Scientists',
+  description: 'AI-powered support for women scientists in Indian government organizations',
+  keywords: ['AI', 'women scientists', 'government', 'DRDO', 'ISRO', 'CSIR', 'policy guidance', 'wellness'],
+  authors: [{ name: 'APEX Team' }],
 }
 
 export const viewport: Viewport = {

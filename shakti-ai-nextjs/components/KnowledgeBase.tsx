@@ -30,58 +30,38 @@ interface ChatMessage {
 
 const agents: Agent[] = [
   {
-    id: 'gynika',
-    name: 'Dr. Gynika',
-    role: 'Women\'s Health Specialist',
-    expertise: 'Reproductive health, Mental wellness, Nutrition',
-    icon: '👩‍⚕️',
-    specialty: 'Comprehensive women\'s health guidance',
-    available: true
-  },
-  {
-    id: 'vaanya',
-    name: 'Advocate Vaanya',
-    role: 'Legal Rights Expert',
-    expertise: 'Family law, Workplace rights, Legal aid',
+    id: 'athena',
+    name: 'Athena',
+    role: 'Policy & Procedure Guide',
+    expertise: 'Government policies, POSH Act, Legal procedures',
     icon: '⚖️',
-    specialty: 'Legal rights and justice advocacy',
+    specialty: 'Navigate complex government policies and procedures',
     available: true
   },
   {
-    id: 'nyaya',
-    name: 'Counselor Nyaya',
-    role: 'Mental Health Counselor',
-    expertise: 'Trauma therapy, Stress management, Emotional support',
-    icon: '🧠',
-    specialty: 'Mental health and emotional wellness',
+    id: 'asha',
+    name: 'Asha',
+    role: 'Wellness & Support Companion',
+    expertise: 'Emotional wellness, Work-life balance, Confidential support',
+    icon: '🌸',
+    specialty: 'Emotional support and wellness guidance',
     available: true
   },
   {
-    id: 'maaya',
-    name: 'Maya',
-    role: 'Crisis Support Specialist',
-    expertise: 'Emergency support, Safety planning, Resource connection',
-    icon: '🆘',
-    specialty: 'Immediate crisis intervention',
-    available: true
-  },
-  {
-    id: 'meher',
-    name: 'Life Coach Meher',
-    role: 'Empowerment Coach',
-    expertise: 'Personal development, Career guidance, Confidence building',
-    icon: '💪',
-    specialty: 'Personal growth and empowerment',
+    id: 'scribe',
+    name: 'Scribe',
+    role: 'Documentation & Workflow Expert',
+    expertise: 'Form generation, Document automation, Process guidance',
+    icon: '📋',
+    specialty: 'Document generation and administrative processes',
     available: true
   }
 ]
 
 const agentMapping: { [key: string]: string } = {
-  'gynika': 'reproductive',
-  'vaanya': 'feminist', 
-  'nyaya': 'legal',
-  'maaya': 'maternal',
-  'meher': 'mental'
+  'athena': 'legal-guide',
+  'asha': 'wellness', 
+  'scribe': 'documentation'
 }
 
 export default function KnowledgeBase() {
@@ -94,9 +74,9 @@ export default function KnowledgeBase() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      content: 'Hello! I\'m here to support you with health, legal, and wellness questions. Select the experts you\'d like to consult with, and let\'s start the conversation.',
+      content: 'Welcome to Project APEX! I\'m here to support women scientists in government organizations with policy guidance, wellness support, and documentation help. Select the experts you\'d like to consult with, and let\'s start the conversation.',
       role: 'agent',
-      agentName: 'SHAKTI-AI Team',
+      agentName: 'APEX Team',
       timestamp: new Date(),
     }
   ])

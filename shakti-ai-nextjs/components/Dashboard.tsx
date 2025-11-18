@@ -20,7 +20,7 @@ const weatherData = {
 const quickStats = [
   {
     label: 'AI Experts',
-    value: '5',
+    value: '3',
     icon: '🧠',
     color: 'from-blue-500 to-purple-600'
   },
@@ -53,11 +53,11 @@ const quickActions = [
     action: 'knowledge'
   },
   {
-    title: 'New Wish',
-    description: 'Create and save your personal goals',
-    icon: '📝',
-    color: 'from-purple-500 to-purple-600',
-    action: 'vault'
+    title: 'Policy Guide',
+    description: 'Navigate government policies and procedures',
+    icon: '⚖️',
+    color: 'from-indigo-500 to-indigo-600',
+    action: 'policy'
   },
   {
     title: 'Voice Chat',
@@ -67,18 +67,18 @@ const quickActions = [
     action: 'voice'
   },
   {
-    title: 'Health Log',
-    description: 'Track your wellness journey',
-    icon: '📊',
+    title: 'Wellness Support',
+    description: 'Access confidential emotional support',
+    icon: '🌸',
     color: 'from-pink-500 to-rose-600',
-    action: 'health'
+    action: 'wellness'
   },
   {
-    title: 'Know Rights',
-    description: 'Learn about your legal protections',
-    icon: '⚖️',
-    color: 'from-indigo-500 to-indigo-600',
-    action: 'rights'
+    title: 'Document Help',
+    description: 'Generate forms and applications',
+    icon: '📋',
+    color: 'from-emerald-600 to-teal-600',
+    action: 'documents'
   },
   {
     title: 'Emergency',
@@ -92,21 +92,21 @@ const quickActions = [
 const recentActivity = [
   {
     type: 'chat',
-    title: 'Chat with Gynika about periods',
+    title: 'Chat with Athena about POSH policies',
     time: '2 hours ago',
     icon: '💬'
   },
   {
-    type: 'wish',
-    title: 'New wish: "Learn meditation"',
+    type: 'document',
+    title: 'Generated leave application form',
     time: 'Yesterday',
-    icon: '✨'
+    icon: '📋'
   },
   {
-    type: 'share',
-    title: 'Shared wish with friend',
+    type: 'wellness',
+    title: 'Wellness session with Asha',
     time: '2 days ago',
-    icon: '📤'
+    icon: '🌸'
   }
 ]
 
@@ -129,7 +129,7 @@ export default function Dashboard({ userName = 'User' }: DashboardProps) {
                   Welcome back, {userName}! 👋
                 </h1>
                 <p className="text-lg opacity-90">
-                  Your AI wellness companion is ready to help
+                  Your AI companion for navigating government scientific organizations
                 </p>
               </div>
             <div className="hidden lg:flex items-center space-x-6">
@@ -283,7 +283,7 @@ export default function Dashboard({ userName = 'User' }: DashboardProps) {
           <div className="text-center py-8">
             <div className="text-6xl mb-4">✨</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No recent activity</h3>
-            <p className="text-gray-500">Start your wellness journey today!</p>
+            <p className="text-gray-500">Start your scientific career support journey today!</p>
           </div>
         )}
       </motion.div>

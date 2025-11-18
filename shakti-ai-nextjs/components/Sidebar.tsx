@@ -75,7 +75,7 @@ export default function Sidebar() {
                 🧬
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">SHAKTI-AI</h1>
+                <h1 className="text-xl font-bold text-gray-900">APEX</h1>
                 <p className="text-sm text-gray-500">Your AI Support</p>
               </div>
             </div>

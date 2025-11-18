@@ -6,88 +6,54 @@ import { ArrowLeft, Brain, Heart, Shield, Users, Crown } from 'lucide-react'
 
 const agents = [
   {
-    id: 'maaya',
-    name: 'Maaya - For Moms, By Heart',
-    emoji: '🤱',
-    expertise: 'Pregnancy, childbirth, and baby care',
-    description: 'Maaya is your comforting pregnancy guide — here to cut through myths, answer every "is this normal?", and keep you calm from bump to baby, with advice that actually makes sense for you.',
-    color: 'from-pink-500 to-rose-600',
-    icon: Heart,
-    specialties: [
-      'Pregnancy guidance',
-      'Childbirth preparation', 
-      'Baby care tips',
-      'Postpartum support',
-      'Breastfeeding help',
-      'Newborn development'
-    ]
-  },
-  {
-    id: 'gynika',
-    name: 'Gynika - Flow Friend',
-    emoji: '🌸',
-    expertise: 'Menstruation, puberty, and contraception',
-    description: 'Gynika is your real talk reproductive guide — ditching the whispers and giving you straight-up truth on your cycle, contraception, and more.',
-    color: 'from-purple-500 to-pink-600',
-    icon: Users,
-    specialties: [
-      'Menstrual health',
-      'Puberty guidance',
-      'Contraception advice',
-      'Reproductive health',
-      'Period management',
-      'Body positivity'
-    ]
-  },
-  {
-    id: 'meher',
-    name: 'Meher - Gentle Guide',
-    emoji: '🫂',
-    expertise: 'Emotional support for trauma, anxiety, and abuse',
-    description: 'Meher is your gentle guide — here to listen without judging, name what hurts, and remind you you\'re never too much, even on your hardest days.',
-    color: 'from-amber-500 to-orange-600',
-    icon: Shield,
-    specialties: [
-      'Trauma support',
-      'Anxiety management',
-      'Abuse recovery',
-      'Emotional wellness',
-      'Mental health',
-      'Crisis support'
-    ]
-  },
-  {
-    id: 'nyaya',
-    name: 'Nyaya - Rights Ally',
+    id: 'athena',
+    name: 'Athena - Policy & Procedure Guide',
     emoji: '⚖️',
-    expertise: 'Indian laws on consent, abortion, and family rights',
-    description: 'Nyaya is your rights ally — here to break down India\'s messy laws, decode your choices, and make sure you know exactly what\'s yours to fight for.',
+    expertise: 'Government policies, legal procedures, and rights guidance',
+    description: 'Athena is your policy expert — trained on HR circulars, POSH Act, leave policies, and government regulations to guide you through complex procedures with precision.',
     color: 'from-blue-500 to-indigo-600',
     icon: Shield,
     specialties: [
+      'Maternity Leave guidance',
+      'Child Care Leave (CCL)',
+      'POSH Act compliance',
+      'Transfer policies',
       'Legal rights education',
-      'Consent laws',
-      'Abortion rights',
-      'Family law',
-      'Women\'s rights',
-      'Legal advocacy'
+      'Government regulations'
     ]
   },
   {
-    id: 'vaanya',
-    name: 'Vaanya - Age Rebel',
-    emoji: '👑',
-    expertise: 'Menopause, hormonal health, and women\'s empowerment',
-    description: 'Vaanya is your health rebel — here to smash taboos, keep you clued up on your body, and remind you that ageing strong is your superpower.',
-    color: 'from-emerald-500 to-teal-600',
-    icon: Crown,
+    id: 'asha',
+    name: 'Asha - Wellness & Support Companion',
+    emoji: '🌸',
+    expertise: 'Emotional wellness, work-life balance, and confidential support',
+    description: 'Asha is your empathetic companion — providing confidential emotional support, wellness resources, and guidance for work-life integration challenges.',
+    color: 'from-purple-500 to-pink-600',
+    icon: Heart,
     specialties: [
-      'Menopause guidance',
-      'Hormonal health',
-      'Women\'s empowerment',
-      'Aging wellness',
-      'Health advocacy',
-      'Body confidence'
+      'Emotional wellness',
+      'Work-life balance',
+      'Stress management',
+      'Confidential support',
+      'Mental health resources',
+      'Career guidance'
+    ]
+  },
+  {
+    id: 'scribe',
+    name: 'Scribe - Documentation & Workflow Expert',
+    emoji: '📋',
+    expertise: 'Document generation, form filling, and process automation',
+    description: 'Scribe is your documentation specialist — helping generate official forms, create checklists, and streamline complex administrative processes efficiently.',
+    color: 'from-emerald-500 to-teal-600',
+    icon: Brain,
+    specialties: [
+      'Form generation',
+      'Leave applications',
+      'Transfer requests',
+      'Grievance filing',
+      'Process checklists',
+      'Document automation'
     ]
   }
 ]
@@ -112,10 +78,10 @@ export default function AIAgents() {
           </button>
           <div>
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
-              Meet Your AI Support Team
+              Meet Your APEX AI Support Team
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mt-2">
-              Five specialized experts ready to help with your wellness journey
+              Three specialized experts ready to help women scientists navigate government organizations
             </p>
           </div>
         </motion.div>
@@ -206,7 +172,7 @@ export default function AIAgents() {
         >
           <h3 className="text-lg font-bold mb-2">Ready to get started?</h3>
           <p className="text-sm opacity-90 mb-4">
-            Choose any agent and start your conversation. They're here to support you 24/7.
+            Choose any agent and start your conversation. They're here to support you in your scientific career.
           </p>
           <button
             onClick={() => setCurrentPage('knowledge')}
