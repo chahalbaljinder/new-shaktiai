@@ -14,7 +14,25 @@ const nextConfig = {
     
     // Increase chunk load timeout for slower systems
     if (!isServer) {
-      config.output.chunkLoadTimeout = 120000 // 2 minutes
+      config.output.chunkLoadTimeout = 300000 // 5 minutes
+      config.output.chunkLoadingGlobal = 'webpackChunkload'
+    }
+    
+    // Optimize chunks for better loading
+    if (!dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+          },
+        },
+      }
     }
     
     return config
