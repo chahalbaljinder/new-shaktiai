@@ -6,8 +6,8 @@ from typing import Dict, List, Optional
 from core.llm import GeminiLLM
 from knowledge_base.retriever import KnowledgeRetriever
 
-class ShaktiAI:
-    """SHAKTI-AI implementation with PDF knowledge base support."""
+class Apex:
+    """APEX implementation with PDF knowledge base support."""
     
     def __init__(self):
         self.llm = GeminiLLM()
@@ -21,35 +21,97 @@ class ShaktiAI:
             self.retriever = None
         
         self.agent_info = {
-            "maternal": {
-                "name": "Maaya",
-                "role": "Maternal Health Nurse",
-                "expertise": "pregnancy, childbirth, and baby care",
-                "specialties": ["pregnancy", "prenatal care", "childbirth", "postpartum", "breastfeeding", "infant care"]
+            "legal-guide": {
+                "name": "Athena",
+                "role": "Policy & Procedure Agent",
+                "expertise": "government HR policies, legal regulations, and official procedures for women scientists in Indian government organizations",
+                "specialties": [
+                    # Leave Policies
+                    "maternity leave", "child care leave", "CCL", "paternity leave", 
+                    "medical leave", "study leave", "earned leave", "casual leave",
+                    
+                    # Transfer & Posting Policies  
+                    "transfer guidelines", "spouse ground transfer", "hardship posting",
+                    "family station transfer", "compassionate transfer", "mutual transfer",
+                    
+                    # Legal Rights & Protection
+                    "POSH Act", "sexual harassment", "workplace harassment", 
+                    "gender discrimination", "equal opportunity", "women's rights at workplace",
+                    
+                    # Career & Promotion
+                    "promotion policies", "career progression", "performance appraisal",
+                    "project allocation", "research opportunities", "leadership positions",
+                    
+                    # Grievance & Redressal
+                    "grievance filing", "complaint procedures", "appeals process", 
+                    "disciplinary action", "vigilance matters", "administrative redressal"
+                ]
             },
-            "reproductive": {
-                "name": "Gynika",
-                "role": "Reproductive Health Advisor",
-                "expertise": "menstruation, puberty, and contraception",
-                "specialties": ["menstruation", "puberty", "contraception", "fertility", "reproductive health", "sexual health"]
+            "wellness": {
+                "name": "Asha",
+                "role": "Wellness & Support Agent",
+                "expertise": "mental wellness, work-life balance, and confidential emotional support for women scientists in government organizations",
+                "specialties": [
+                    # Mental Wellness & Stress Management
+                    "stress management", "anxiety", "burnout prevention", "emotional support",
+                    "mental health resources", "counseling referrals", "crisis intervention",
+                    
+                    # Work-Life Integration
+                    "work-life balance", "time management", "career-family balance",
+                    "dual career couples", "childcare support", "eldercare responsibilities",
+                    
+                    # Workplace Wellness
+                    "workplace stress", "professional isolation", "imposter syndrome",
+                    "confidence building", "peer support networks", "mentorship guidance",
+                    
+                    # Safety & Confidential Support
+                    "workplace harassment support", "emotional trauma", "safety planning",
+                    "anonymous reporting", "confidential counseling", "victim support",
+                    
+                    # Empowerment & Motivation  
+                    "self-advocacy", "assertiveness training", "communication skills",
+                    "boundary setting", "resilience building", "motivational support",
+                    
+                    # Specialized Support for Scientists
+                    "research stress", "publication pressure", "conference anxiety",
+                    "presentation skills", "networking challenges", "career transitions"
+                ]
             },
-            "mental": {
-                "name": "Meher",
-                "role": "Mental Health Counselor",
-                "expertise": "trauma, anxiety, and abuse recovery",
-                "specialties": ["anxiety", "depression", "trauma", "PTSD", "domestic violence", "mental wellness"]
-            },
-            "legal": {
-                "name": "Nyaya",
-                "role": "Legal Rights Advisor",
-                "expertise": "Indian laws related to women's rights",
-                "specialties": ["women's rights", "family law", "workplace harassment", "domestic violence law", "property rights"]
-            },
-            "feminist": {
-                "name": "Vaanya",
-                "role": "Feminist Health Educator",
-                "expertise": "menopause, hormonal health, and women's empowerment",
-                "specialties": ["menopause", "hormonal health", "women's empowerment", "body autonomy", "health advocacy"]
+            "documentation": {
+                "name": "Scribe", 
+                "role": "Documentation & Workflow Agent",
+                "expertise": "automated document generation, form assistance, and procedural guidance for women scientists in government organizations",
+                "specialties": [
+                    # Document Generation & Forms
+                    "leave applications", "transfer requests", "grievance forms", "appeal letters",
+                    "maternity leave forms", "CCL applications", "medical leave documentation",
+                    "official correspondence", "policy interpretation documents", "legal notices",
+                    
+                    # Workflow & Process Guidance
+                    "step-by-step procedures", "submission guidelines", "approval workflows",
+                    "document checklists", "required attachments", "filing deadlines",
+                    "follow-up procedures", "status tracking", "escalation protocols",
+                    
+                    # Administrative Navigation
+                    "office procedures", "bureaucratic processes", "authority identification",
+                    "submission channels", "reference number tracking", "timeline management",
+                    "reminder systems", "progress monitoring", "case documentation",
+                    
+                    # Specialized Government Forms
+                    "POSH complaint forms", "vigilance matter reports", "transfer applications",
+                    "promotion documentation", "performance appraisal submissions", 
+                    "research proposal formats", "project allocation requests",
+                    
+                    # Compliance & Legal Documentation
+                    "policy compliance forms", "statutory requirements", "legal documentation",
+                    "evidence compilation", "witness statements", "incident reports",
+                    "safety documentation", "confidentiality agreements",
+                    
+                    # Communication & Correspondence
+                    "official email templates", "letter formatting", "petition drafting",
+                    "meeting minutes", "formal requests", "acknowledgment receipts",
+                    "status inquiry letters", "clarification requests"
+                ]
             }
         }
     
@@ -66,11 +128,9 @@ class ShaktiAI:
         """
         # Map agent types to knowledge base names
         agent_mapping = {
-            "maternal": "maaya",
-            "reproductive": "gynika", 
-            "mental": "meher",
-            "legal": "nyaya",
-            "feminist": "vaanya"
+            "legal-guide": "athena",
+            "wellness": "asha", 
+            "documentation": "scribe"
         }
         
         kb_agent_name = agent_mapping.get(agent_type)
@@ -117,21 +177,25 @@ class ShaktiAI:
         # Add knowledge base context if available
         
         prompt = f"""
-        You are {agent_info['name']}, a {agent_info['role']} who specializes in {agent_info['expertise'].replace(", ", ", and")}.
-        Your mission is to help Indian women and girls feel seen, supported, and safe — while providing accurate, trustworthy, culturally relevant information.
+            You are {agent_info['name']}, a {agent_info['role']} who specializes in {agent_info['expertise'].replace(", ", ", and")}.
+            Your mission is to empower women scientists in Indian government organizations (DRDO, ISRO, CSIR) by providing accurate, trustworthy, and confidential support — helping them navigate complex policies, procedures, and workplace challenges with confidence.
 
-        A user has asked:
-        "{query}"
+            A user has asked:
+            "{query}"
 
-        Your style guide:
-        1️⃣ Your reply must feel personal — use simple sentences, warm words, and a conversational tone.
-        2️⃣ Add **micro-questions** or reflection prompts when it helps the user process emotions.
-        3️⃣ Include **mini-scripts** or **real-life examples** if relevant (like what they could say, text, or do).
-        4️⃣ If you use information from the knowledge base, weave it in naturally — don’t just dump it.
-        5️⃣ End with a **gentle sign-off**: permission to come back, seek help, or stay safe.
-        6️⃣ Provide specific rights, legal facts, or medical details only if clearly relevant — keep accuracy but don’t overload.
+            Your style guide:
+            1️⃣ Your reply must feel professional yet supportive — use clear, confident language while maintaining warmth and empathy.
+            2️⃣ Add **micro-questions** or reflection prompts when it helps the user clarify their situation or next steps.
+            3️⃣ Include **practical examples** or **step-by-step guidance** when relevant (like specific procedures, templates, or scripts they could use).
+            4️⃣ If you use information from the knowledge base, integrate it naturally — provide context and explain relevance rather than just listing facts.
+            5️⃣ End with a **empowering sign-off**: reassure them of confidentiality, encourage follow-up questions, or remind them of available support.
+            6️⃣ Provide specific policy details, legal rights, or procedural information when clearly relevant — be thorough but organized, don't overwhelm.
+            7️⃣ Consider the unique challenges faced by women in scientific government roles: work-life balance, career progression, systemic barriers, and safety concerns.
+            8️⃣ Maintain complete confidentiality and remind users of anonymous reporting options when discussing sensitive matters.
 
-        """
+            Context: You are part of Project Apex, designed specifically for women scientists in Indian government organizations who may face cultural barriers, policy complexity, and workplace challenges unique to these environments.
+
+            """
 
         if age:
             prompt += f"\nAdapt your tone and examples for a {age}-year-old."
@@ -276,7 +340,7 @@ and ensure the response is culturally sensitive and appropriate. Structure the r
         synthesis = self.llm._call(synthesis_prompt)
         
         # Format final response
-        formatted_response = "# 🧬 SHAKTI-AI Expert Guidance\n\n"
+        formatted_response = "# 🧬 APEX Expert Guidance\n\n"
         formatted_response += synthesis
         
         # Add sources if available (group by document and merge page numbers)
@@ -342,21 +406,21 @@ and ensure the response is culturally sensitive and appropriate. Structure the r
             
         return formatted_response
 
-def ask_shakti_ai(query: str, agent_types: List[str] = None, age: Optional[int] = None) -> str:
+def ask_apex(query: str, agent_types: List[str] = None, age: Optional[int] = None) -> str:
     """
-    Process a query through SHAKTI-AI agents with knowledge base integration.
+    Process a query through APEX agents with knowledge base integration.
     
     Args:
         query: The user's question or issue
         agent_types: Optional list of agent types to use. If None, all agents will be used.
-                    Options: "maternal", "reproductive", "mental", "legal", "feminist"
+                    Options: "legal-guide", "wellness", "documentation"
     """
     # Use cached global instance to avoid reloading knowledge base
-    global _shakti_ai_instance
-    if _shakti_ai_instance is None:
-        _shakti_ai_instance = ShaktiAI()
+    global apex_instance
+    if apex_instance is None:
+        apex_instance = Apex()
     
-    return _shakti_ai_instance.process_query(query, agent_types, age)
+    return apex_instance.process_query(query, agent_types, age)
 
 # Global cached instance - loaded once when module is imported
-_shakti_ai_instance = None
+apex_instance = None

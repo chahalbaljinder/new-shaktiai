@@ -1,5 +1,5 @@
 """
-Agent definitions for SHAKTI-AI system.
+Agent definitions for APEX system.
 """
 
 from llm import GeminiLLM
@@ -8,22 +8,15 @@ from llm import GeminiLLM
 llm = GeminiLLM()
 
 # These functions are kept for compatibility but are no longer used in the direct implementation
-def create_maaya_agent():
-    """Create Maaya agent for maternal health and newborn care."""
+def create_athena_agent():
+    """Create Athena agent for legal policies and procedure guidance."""
     return None
 
-def create_gynika_agent():
-    """Create Gynika agent for reproductive health."""
+def create_asha_agent():
+    """Create Asha agent for wellness & emotional support."""
     return None
 
-def create_meher_agent():
-    """Create Meher agent for emotional support."""
+def create_scribe_agent():
+    """Create Scribe agent for documentation and workflow automation."""
     return None
 
-def create_nyaya_agent():
-    """Create Nyaya agent for legal guidance."""
-    return None
-
-def create_vaanya_agent():
-    """Create Vaanya agent for menopause and hormonal balance."""
-    return None
