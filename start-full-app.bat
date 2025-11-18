@@ -1,18 +1,18 @@
 @echo off
-echo 🚀 Starting SHAKTI-AI Full Stack Application
-echo ==========================================
+echo 🚀 Starting APEX Full Stack Application
+echo =====================================
 
 cd /d "%~dp0"
 
 echo 🐍 Step 1: Starting Python Backend Service...
-start "SHAKTI-AI Backend" cmd /k "cd /d "%~dp0" && python backend_service.py"
+start "APEX Backend" cmd /k "cd /d "%~dp0" && python backend_service.py"
 
 echo ⏳ Waiting for backend to start...
 timeout /t 5 /nobreak > nul
 
 echo 🌐 Step 2: Starting Next.js Frontend...
 cd shakti-ai-nextjs
-start "SHAKTI-AI Frontend" cmd /k "npm run dev"
+start "APEX Frontend" cmd /k "npm run dev"
 
 echo ✅ Both services starting!
 echo.

@@ -1,5 +1,5 @@
-# Start SHAKTI-AI Backend using shakti_backend.py
-Write-Host "Starting SHAKTI-AI Backend (shakti_backend.py)..." -ForegroundColor Green
+# Start APEX Backend using shakti_backend.py
+Write-Host "Starting APEX Backend (shakti_backend.py)..." -ForegroundColor Green
 
 # Activate virtual environment if it exists
 if (Test-Path ".venv\Scripts\Activate.ps1") {

@@ -1,5 +1,5 @@
 @echo off
-echo Starting SHAKTI-AI Backend (shakti_backend.py)...
+echo Starting APEX Backend (shakti_backend.py)...
 
 :: Activate virtual environment if it exists
 if exist ".venv\Scripts\activate.bat" (

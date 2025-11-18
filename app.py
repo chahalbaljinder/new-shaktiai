@@ -3,7 +3,7 @@ Enhanced SHAKTI-AI Streamlit application with voice input and sharing features.
 """
 
 import streamlit as st
-from core.crew import ask_shakti_ai
+from core.crew import ask_apex
 from dotenv import load_dotenv
 import os
 from core.get_voice_input import get_voice_input, get_voice_input_interactive
@@ -664,50 +664,34 @@ h1, h2, h3, h4, h5, h6 {
 """, unsafe_allow_html=True)
 
 # Title and introduction
-st.title("🧬 SHAKTI-AI")
-st.subheader("AI-powered support for women's health, legal rights, and well-being")
+st.title("🏛️ Project APEX")
+st.subheader("AI Companion for Women Scientists in Indian Government Organizations")
 
 # Sidebar with agent information
-st.sidebar.title("Meet Your AI Support Team")
+st.sidebar.title("Meet Your APEX Support Team")
 
-with st.sidebar.expander("👶 Maaya - For Moms, By Heart", expanded=False):
+with st.sidebar.expander("⚖️ Athena - Policy & Procedure Guide", expanded=False):
     st.markdown("""
-    **Expertise**: Pregnancy, childbirth, and baby care
+    **Expertise**: Government HR policies, legal regulations, and official procedures
     
-    Maaya is your comforting pregnancy guide — here to cut through myths, answer every "is this normal?", 
-    and keep you calm from bump to baby, with advice that actually makes sense for you.
+    Athena is your government policy expert — here to navigate complex bureaucracy, explain HR circulars,
+    and help you understand your rights and procedures in DRDO, ISRO, and CSIR organizations.
     """)
 
-with st.sidebar.expander("🌸 Gynika - Flow Friend", expanded=False):
+with st.sidebar.expander("🧘‍♀️ Asha - Wellness & Support Companion", expanded=False):
     st.markdown("""
-    **Expertise**: Menstruation, puberty, and contraception
+    **Expertise**: Mental wellness, work-life balance, and confidential emotional support
     
-    Gynika is your real talk reproductive guide — ditching the whispers and giving you straight-up truth on 
-    your cycle, contraception, and more.
+    Asha is your empathetic wellness guide — here to help manage research stress, maintain work-life balance,
+    and provide confidential support for the unique challenges faced by women scientists.
     """)
 
-with st.sidebar.expander("🧘‍♀️ Meher - Gentle Guide", expanded=False):
+with st.sidebar.expander("📝 Scribe - Documentation & Workflow Assistant", expanded=False):
     st.markdown("""
-    **Expertise**: Emotional support for trauma, anxiety, and abuse
+    **Expertise**: Automated document generation, form assistance, and procedural guidance
     
-    Meher is your gentle guide — here to listen without judging, name what hurts, and remind you you're never 
-    too much, even on your hardest days.
-    """)
-
-with st.sidebar.expander("⚖️ Nyaya - Rights Ally", expanded=False):
-    st.markdown("""
-    **Expertise**: Indian laws on consent, abortion, and family rights
-    
-    Nyaya is your rights ally — here to break down India's messy laws, decode your choices, and make sure
-    you know exactly what's yours to fight for.
-    """)
-
-with st.sidebar.expander("💪 Vaanya - Age Rebel", expanded=False):
-    st.markdown("""
-    **Expertise**: Menopause, hormonal health, and women's empowerment
-    
-    Vaanya is your health rebel — here to smash taboos, keep you clued up on your body, and
-    remind you that ageing strong is your superpower.
+    Scribe is your administrative assistant — here to help draft applications, navigate submission workflows,
+    and ensure your documentation meets all official requirements and deadlines.
     """)
 
 # Add wishes vault to sidebar
@@ -838,18 +822,14 @@ final_query_text = query or st.session_state.get('current_transcript', '')
 
 # Agent selection
 st.markdown("### Which experts would you like to consult? (Optional)")
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3 = st.columns(3)
 
 with col1:
-    maternal = st.checkbox("Maternal Health", value=False)
+    legal_guide = st.checkbox("Policy & Procedure", value=False)
 with col2:
-    reproductive = st.checkbox("Reproductive Health", value=False)
+    wellness = st.checkbox("Wellness & Support", value=False)
 with col3:
-    mental = st.checkbox("Mental Health", value=False)
-with col4:
-    legal = st.checkbox("Legal Rights", value=False)
-with col5:
-    feminist = st.checkbox("Hormonal Health", value=False)
+    documentation = st.checkbox("Documentation", value=False)
 
 # Submit button and auto-processing
 if st.button("Get Guidance", use_container_width=True) or st.session_state.get('auto_process', False):
@@ -861,26 +841,22 @@ if st.button("Get Guidance", use_container_width=True) or st.session_state.get('
     final_query = final_query_text
     
     if final_query:
-        with st.spinner("Consulting with SHAKTI-AI experts..."):
+        with st.spinner("Consulting with APEX experts..."):
             # Determine which agents to use based on checkboxes
             selected_agents = []
-            if maternal:
-                selected_agents.append("maternal")
-            if reproductive:
-                selected_agents.append("reproductive")
-            if mental:
-                selected_agents.append("mental")
-            if legal:
-                selected_agents.append("legal")
-            if feminist:
-                selected_agents.append("feminist")
+            if legal_guide:
+                selected_agents.append("legal-guide")
+            if wellness:
+                selected_agents.append("wellness")
+            if documentation:
+                selected_agents.append("documentation")
             
             # If no specific agents selected, use all
             if not selected_agents:
                 selected_agents = None
                 
-            # Get response from SHAKTI-AI
-            response = ask_shakti_ai(final_query, selected_agents, age)
+            # Get response from APEX
+            response = ask_apex(final_query, selected_agents, age)
             
             # Display response
             st.markdown("### Expert Guidance")
@@ -900,8 +876,9 @@ if st.button("Get Guidance", use_container_width=True) or st.session_state.get('
 
 # Footer
 st.markdown("---")
-st.markdown("✨ *SHAKTI-AI: For every woman, every phase, every fight.* ✨")
+st.markdown("✨ *Project APEX: Empowering women scientists in Indian government organizations.* ✨")
 st.markdown(
-    "**Disclaimer:** SHAKTI-AI provides general information only and is not a substitute for professional medical, legal, or mental health advice. "
-    "Always consult qualified professionals for specific concerns."
+    "**Disclaimer:** APEX provides general information only and is not a substitute for professional medical, legal, or mental health advice. "
+    "Always consult qualified professionals for specific concerns. This system is designed to support women scientists "
+    "in DRDO, ISRO, and CSIR organizations with policy guidance and administrative support."
 )

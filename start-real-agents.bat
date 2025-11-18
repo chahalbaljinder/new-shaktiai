@@ -1,8 +1,8 @@
 @echo off
-title SHAKTI-AI Real Agents Backend
+title APEX Real Agents Backend
 echo.
-echo 🤖 SHAKTI-AI Real Agents Backend
-echo ================================
+echo 🤖 APEX Real Agents Backend
+echo ===========================
 echo.
 echo Starting backend with your actual AI agents...
 echo This will connect to your knowledge base and provide real responses.

@@ -1,6 +1,6 @@
 @echo off
-echo 🚀 Starting SHAKTI-AI Application
-echo ===================================
+echo 🚀 Starting APEX Application
+echo =============================
 
 echo.
 echo 📦 Step 1: Installing/updating dependencies...
@@ -12,7 +12,7 @@ echo 🔧 Step 2: Starting Next.js Development Server...
 echo Frontend will be available at: http://localhost:3000 (or next available port)
 echo.
 
-start "SHAKTI-AI Frontend" cmd /k "cd /d \"c:\Users\anjal\SHAKTI AII\new-shaktiai\shakti-ai-nextjs\" && npm run dev"
+start "APEX Frontend" cmd /k "cd /d \"c:\Users\anjal\SHAKTI AII\new-shaktiai\shakti-ai-nextjs\" && npm run dev"
 
 echo.
 echo ⏳ Waiting for frontend to start...
@@ -23,7 +23,7 @@ echo 🐍 Step 3: Starting Python Backend Service...
 echo Backend will be available at: http://localhost:8000
 echo.
 
-start "SHAKTI-AI Backend" cmd /k "cd /d \"c:\Users\anjal\SHAKTI AII\new-shaktiai\" && python backend_service.py"
+start "APEX Backend" cmd /k "cd /d \"c:\Users\anjal\SHAKTI AII\new-shaktiai\" && python backend_service.py"
 
 echo.
 echo ✅ Application Starting!

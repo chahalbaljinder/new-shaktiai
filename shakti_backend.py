@@ -1,5 +1,5 @@
 """
-Real SHAKTI-AI Backend Service
+Real APEX Backend Service
 Connects your ChatGPT interface to actual AI agents with knowledge base
 """
 
@@ -12,13 +12,13 @@ from datetime import datetime
 # Add the current directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Import the real SHAKTI-AI functions
+# Import the real APEX functions
 try:
-    from core.crew import ask_shakti_ai
-    print("✅ Successfully imported SHAKTI-AI crew")
+    from core.crew import ask_apex
+    print("✅ Successfully imported APEX crew")
     AI_AVAILABLE = True
 except ImportError as e:
-    print(f"❌ Error importing SHAKTI-AI: {e}")
+    print(f"❌ Error importing APEX: {e}")
     AI_AVAILABLE = False
 
 class RealAIHandler(BaseHTTPRequestHandler):
@@ -43,7 +43,7 @@ class RealAIHandler(BaseHTTPRequestHandler):
             
             status = "Real AI Agents" if AI_AVAILABLE else "AI Import Failed"
             response = {
-                "message": f"SHAKTI-AI Backend ({status}) is running!", 
+                "message": f"APEX Backend ({status}) is running!", 
                 "status": "ok",
                 "ai_available": AI_AVAILABLE,
                 "timestamp": datetime.now().isoformat()
@@ -70,26 +70,26 @@ class RealAIHandler(BaseHTTPRequestHandler):
                 print(f"🔄 Processing query for {agent_type}: {message}")
                 
                 if AI_AVAILABLE:
-                    # Map frontend agent types to SHAKTI-AI agent types
+                    # Map frontend agent types to APEX agent types
                     agent_mapping = {
-                        'reproductive': ['reproductive'],
-                        'feminist': ['feminist'],
-                        'legal': ['legal'],
-                        'maternal': ['maternal'],
-                        'mental': ['mental']
+                        'legal-guide': ['legal-guide'],
+                        'wellness': ['wellness'],
+                        'documentation': ['documentation'],
+                        'policy': ['legal-guide'],
+                        'support': ['wellness']
                     }
                     
-                    # Get the agent types for SHAKTI-AI
-                    shakti_agents = agent_mapping.get(agent_type, ['reproductive'])
+                    # Get the agent types for APEX
+                    apex_agents = agent_mapping.get(agent_type, ['legal-guide'])
                     
-                    # Call the real SHAKTI-AI function
-                    print(f"🤖 Calling SHAKTI-AI with agents: {shakti_agents}")
+                    # Call the real APEX function
+                    print(f"🤖 Calling APEX with agents: {apex_agents}")
                     try:
-                        ai_response = ask_shakti_ai(message, shakti_agents)
+                        ai_response = ask_apex(message, apex_agents)
                         print(f"✅ Real AI response received ({len(ai_response)} chars)")
                         response_text = ai_response
                     except Exception as ai_error:
-                        print(f"🚨 SHAKTI-AI Error: {ai_error}")
+                        print(f"🚨 APEX Error: {ai_error}")
                         print(f"🔍 Error Type: {type(ai_error).__name__}")
                         import traceback
                         print(f"📍 Full Traceback:")
@@ -333,11 +333,11 @@ class RealAIHandler(BaseHTTPRequestHandler):
             raise
 
 def run_real_ai_backend():
-    print("🚀 Starting SHAKTI-AI Real Backend with Actual Agents")
-    print("==================================================")
+    print("🚀 Starting APEX Real Backend with Actual Agents")
+    print("==============================================")
     
     if AI_AVAILABLE:
-        print("✅ Real SHAKTI-AI agents loaded successfully!")
+        print("✅ Real APEX agents loaded successfully!")
         print("🧠 Your agents have access to knowledge base")
         print("💬 Users will get authentic expert responses")
     else:
@@ -359,7 +359,7 @@ def run_real_ai_backend():
         print("🚀 Server initialized successfully")
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\n🛑 SHAKTI-AI backend stopped by user")
+        print("\n🛑 APEX backend stopped by user")
     except Exception as e:
         print(f"\n💥 Server error: {e}")
         import traceback

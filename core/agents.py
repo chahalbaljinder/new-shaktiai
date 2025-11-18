@@ -9,7 +9,7 @@ llm = GeminiLLM()
 
 # These functions are kept for compatibility but are no longer used in the direct implementation
 def create_athena_agent():
-    """Create Athena agent for legal policies and procedure guidance."""
+    """Create Athena agent for policy & procedure guidance."""
     return None
 
 def create_asha_agent():
