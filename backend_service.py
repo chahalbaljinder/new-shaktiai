@@ -63,9 +63,11 @@ except ImportError as e:
 try:
     import speech_recognition as sr
     logger.info("Successfully imported speech_recognition")
+    SPEECH_RECOGNITION_AVAILABLE = True
 except ImportError as e:
     logger.error(f"Failed to import speech_recognition: {e}")
     sr = None
+    SPEECH_RECOGNITION_AVAILABLE = False
 
 app = FastAPI(title="AOEX Backend Service", version="1.0.0")
 
@@ -478,6 +480,12 @@ async def share_wish(request: ShareWishRequest):
 @app.post("/api/voice/speech-to-text")
 async def speech_to_text(audio: UploadFile = File(...)):
     """Convert speech audio to text using uploaded file."""
+    if not SPEECH_RECOGNITION_AVAILABLE:
+        raise HTTPException(
+            status_code=503, 
+            detail="Speech recognition not available. Please install: pip install SpeechRecognition"
+        )
+    
     temp_file_path = None
     
     try:
