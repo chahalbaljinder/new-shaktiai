@@ -23,7 +23,7 @@ class KnowledgeRetriever:
     
     def load_all_stores(self):
         """Load all available vector stores for different agents."""
-        agent_names = ['maaya', 'gynika', 'meher', 'nyaya', 'vaanya']
+        agent_names = ['athena', 'asha', 'scribe']
         
         for agent_name in agent_names:
             store_path = self.kb_base_path / f"{agent_name}_vectorstore"
@@ -68,7 +68,7 @@ class KnowledgeRetriever:
         Retrieve relevant knowledge for a specific agent.
         
         Args:
-            agent_name: Name of the agent (maaya, gynika, meher, nyaya, vaanya)
+            agent_name: Name of the agent (athena, asha, scribe)
             query: Search query
             top_k: Number of top results to return
             min_similarity: Minimum similarity threshold

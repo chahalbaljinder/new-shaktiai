@@ -30,7 +30,7 @@ class KnowledgeBaseManager:
             path.mkdir(parents=True, exist_ok=True)
         
         self.processor = DocumentProcessor()
-        self.agent_names = ['maaya', 'gynika', 'meher', 'nyaya', 'vaanya']
+        self.agent_names = ['athena', 'asha', 'scribe']
     
     def process_agent_pdfs(self, agent_name: str, force_rebuild: bool = False) -> bool:
         """
