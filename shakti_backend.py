@@ -49,6 +49,53 @@ class RealAIHandler(BaseHTTPRequestHandler):
                 "timestamp": datetime.now().isoformat()
             }
             self.wfile.write(json.dumps(response).encode())
+        elif self.path == '/api/agents':
+            # Handle agent status request
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            response = {
+                "agents": [
+                    {"id": "athena", "name": "Athena", "type": "policy", "available": AI_AVAILABLE},
+                    {"id": "asha", "name": "Asha", "type": "wellness", "available": AI_AVAILABLE},
+                    {"id": "scribe", "name": "Scribe", "type": "documentation", "available": AI_AVAILABLE}
+                ],
+                "status": "online" if AI_AVAILABLE else "offline",
+                "timestamp": datetime.now().isoformat()
+            }
+            self.wfile.write(json.dumps(response).encode())
+        elif self.path == '/api/agents/list':
+            # Handle agent list request (for frontend compatibility)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            response = {
+                "agents": {
+                    "legal-guide": {
+                        "name": "Athena",
+                        "role": "Policy & Research Advisor", 
+                        "expertise": "policy guidance, research funding, legal compliance",
+                        "specialties": ["DRDO IPR", "women scientist schemes", "research policies", "funding guidelines"]
+                    },
+                    "wellness": {
+                        "name": "Asha",
+                        "role": "Wellness & Support Counselor",
+                        "expertise": "mental health, work-life balance, stress management", 
+                        "specialties": ["stress management", "imposter syndrome", "mental health", "workplace wellness"]
+                    },
+                    "documentation": {
+                        "name": "Scribe",
+                        "role": "Documentation & Procedures Expert",
+                        "expertise": "office procedures, documentation formats, administrative processes",
+                        "specialties": ["office memorandums", "e-office procedures", "transfer applications", "official formats"]
+                    }
+                }
+            }
+            self.wfile.write(json.dumps(response).encode())
         elif self.path == '/api/wishes/list':
             # Handle wishes list request via GET
             self.handle_wishes_list()
@@ -98,6 +145,15 @@ class RealAIHandler(BaseHTTPRequestHandler):
                     
                 else:
                     response_text = f"❌ AI agents are not available. Error during import. Please check the core.crew module."
+                # Get agent name for response
+                agent_names = {
+                    'legal-guide': 'Athena',
+                    'wellness': 'Asha', 
+                    'documentation': 'Scribe',
+                    'policy': 'Athena',
+                    'support': 'Asha'
+                }
+                agent_name = agent_names.get(agent_type, 'APEX')
                 
                 # Send successful response
                 self.send_response(200)
@@ -107,6 +163,7 @@ class RealAIHandler(BaseHTTPRequestHandler):
                 
                 response = {
                     "response": response_text,
+                    "agent_name": agent_name,
                     "agent_type": agent_type,
                     "timestamp": datetime.now().isoformat(),
                     "status": "success",
