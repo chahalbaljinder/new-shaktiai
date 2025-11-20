@@ -1,292 +1,323 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Bell, Sun, Cloud, CloudRain, Thermometer } from 'lucide-react'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Users, 
+  FileText, 
+  CheckCircle, 
+  Clock,
+  Eye,
+  ShoppingCart,
+  DollarSign,
+  ArrowUp,
+  ArrowDown
+} from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 
 interface DashboardProps {
   userName?: string
 }
 
-const weatherData = {
-  location: 'New Delhi',
-  temperature: 28,
-  condition: 'Clear Sky',
-  humidity: 65,
-  windSpeed: 12,
-  icon: '☀️'
-}
-
-const quickStats = [
+const statsData = [
   {
-    label: 'AI Experts',
-    value: '3',
-    icon: '🧠',
-    color: 'from-blue-500 to-purple-600'
+    title: 'Total Queries',
+    value: '3,782',
+    change: '+11.01%',
+    isPositive: true,
+    icon: Users,
+    iconBg: 'bg-[#3C50E0]',
+    iconColor: 'text-white'
   },
   {
-    label: 'Available',
-    value: '24/7',
-    icon: '💬',
-    color: 'from-green-500 to-emerald-600'
+    title: 'Active Cases',
+    value: '5,359',
+    change: '+9.05%',
+    isPositive: true,
+    icon: FileText,
+    iconBg: 'bg-[#10B981]',
+    iconColor: 'text-white'
   },
   {
-    label: 'Secure',
-    value: 'Private',
-    icon: '🔐',
-    color: 'from-purple-500 to-pink-600'
+    title: 'Resolved',
+    value: '2,450',
+    change: '+2.59%',
+    isPositive: true,
+    icon: CheckCircle,
+    iconBg: 'bg-[#F59E0B]',
+    iconColor: 'text-white'
   },
   {
-    label: 'Voice',
-    value: 'Ready',
-    icon: '🎤',
-    color: 'from-amber-500 to-orange-600'
+    title: 'Pending',
+    value: '1,289',
+    change: '-0.95%',
+    isPositive: false,
+    icon: Clock,
+    iconBg: 'bg-[#EF4444]',
+    iconColor: 'text-white'
   }
 ]
 
-const quickActions = [
+const recentOrders = [
   {
-    title: 'Ask Expert',
-    description: 'Get instant guidance from AI specialists',
-    icon: '💬',
-    color: 'from-blue-500 to-blue-600',
-    action: 'knowledge'
+    id: 'ORD-001',
+    product: 'Query: POSH Policy',
+    status: 'Delivered',
+    amount: '$2399.00',
+    statusColor: 'text-[#10B981] bg-[#10B981]/10'
   },
   {
-    title: 'Policy Guide',
-    description: 'Navigate government policies and procedures',
-    icon: '⚖️',
-    color: 'from-indigo-500 to-indigo-600',
-    action: 'policy'
+    id: 'ORD-002',
+    product: 'Complaint: Workplace Issue',
+    status: 'Pending',
+    amount: '$879.00',
+    statusColor: 'text-[#F59E0B] bg-[#F59E0B]/10'
   },
   {
-    title: 'Voice Chat',
-    description: 'Talk directly with our AI team',
-    icon: '🎤',
-    color: 'from-emerald-500 to-emerald-600',
-    action: 'voice'
+    id: 'ORD-003',
+    product: 'Feedback: Annual Review',
+    status: 'Delivered',
+    amount: '$1869.00',
+    statusColor: 'text-[#10B981] bg-[#10B981]/10'
   },
   {
-    title: 'Wellness Support',
-    description: 'Access confidential emotional support',
-    icon: '🌸',
-    color: 'from-pink-500 to-rose-600',
-    action: 'wellness'
+    id: 'ORD-004',
+    product: 'Query: Leave Policy',
+    status: 'Canceled',
+    amount: '$1699.00',
+    statusColor: 'text-[#EF4444] bg-[#EF4444]/10'
   },
   {
-    title: 'Document Help',
-    description: 'Generate forms and applications',
-    icon: '📋',
-    color: 'from-emerald-600 to-teal-600',
-    action: 'documents'
-  },
-  {
-    title: 'Emergency',
-    description: 'Quick access to emergency resources',
-    icon: '🆘',
-    color: 'from-red-500 to-red-600',
-    action: 'emergency'
+    id: 'ORD-005',
+    product: 'Support: HR Escalation',
+    status: 'Delivered',
+    amount: '$240.00',
+    statusColor: 'text-[#10B981] bg-[#10B981]/10'
   }
 ]
 
-const recentActivity = [
-  {
-    type: 'chat',
-    title: 'Chat with Athena about POSH policies',
-    time: '2 hours ago',
-    icon: '💬'
-  },
-  {
-    type: 'document',
-    title: 'Generated leave application form',
-    time: 'Yesterday',
-    icon: '📋'
-  },
-  {
-    type: 'wellness',
-    title: 'Wellness session with Asha',
-    time: '2 days ago',
-    icon: '🌸'
-  }
+const customerDemographic = [
+  { country: 'USA', customers: 2379, percentage: 79, flag: '🇺🇸' },
+  { country: 'India', customers: 1589, percentage: 53, flag: '🇮🇳' },
+  { country: 'UK', customers: 989, percentage: 33, flag: '🇬🇧' },
+  { country: 'Germany', customers: 589, percentage: 20, flag: '🇩🇪' }
 ]
 
 export default function Dashboard({ userName = 'User' }: DashboardProps) {
   const { setCurrentPage } = useAppStore()
 
   return (
-    <div className="min-h-screen overflow-y-auto">
-      <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8 pb-20">
-        {/* Welcome Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-primary rounded-3xl p-8 text-white relative overflow-hidden"
-        >
-          <div className="relative z-10">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl lg:text-4xl font-bold mb-2">
-                  Welcome back, {userName}! 👋
-                </h1>
-                <p className="text-lg opacity-90">
-                  Your AI companion for navigating government scientific organizations
-                </p>
-              </div>
-            <div className="hidden lg:flex items-center space-x-6">
-              <div className="flex items-center space-x-2 bg-white/20 rounded-full px-4 py-2">
-                <span className="text-2xl">{weatherData.icon}</span>
-                <div>
-                  <div className="font-semibold">{weatherData.temperature}°C</div>
-                  <div className="text-sm opacity-75">{weatherData.condition}</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 bg-white/20 rounded-full px-4 py-2">
-                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">All Systems Ready</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-      </motion.div>
-
-      {/* Quick Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-      >
-        {quickStats.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            whileHover={{ scale: 1.02, y: -2 }}
-            className={`bg-white rounded-2xl p-6 shadow-sm border border-gray-200 text-center ${
-              stat.label === 'AI Experts' 
-                ? 'cursor-pointer hover:shadow-md transition-shadow' 
-                : ''
-            }`}
-            onClick={() => {
-              if (stat.label === 'AI Experts') {
-                setCurrentPage('agents')
-              }
-            }}
-          >
-            <div className="text-3xl mb-2">{stat.icon}</div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
-            <div className="text-sm text-gray-500">{stat.label}</div>
-            {stat.label === 'AI Experts' && (
-              <div className="text-xs text-purple-600 mt-1 font-medium">Click to meet them</div>
-            )}
-          </motion.div>
-        ))}
-      </motion.div>
-
-      {/* Weather Widget */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="lg:hidden bg-gradient-accent rounded-2xl p-6 text-white"
-      >
+    <div className="min-h-screen">
+      <div className="max-w-[1600px] mx-auto space-y-6">
+        {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="text-2xl">{weatherData.icon}</span>
-              <div>
-                <div className="font-semibold text-lg">{weatherData.location}</div>
-                <div className="text-sm opacity-75">{weatherData.condition}</div>
-              </div>
-            </div>
-            <div className="text-3xl font-light">{weatherData.temperature}°C</div>
-          </div>
-          <div className="text-right">
-            <div className="text-sm opacity-75">Humidity</div>
-            <div className="font-semibold">{weatherData.humidity}%</div>
-            <div className="text-sm opacity-75 mt-2">Wind</div>
-            <div className="font-semibold">{weatherData.windSpeed} km/h</div>
+            <h1 className="text-3xl font-bold text-[#1C2434] dark:text-white">
+              Dashboard
+            </h1>
+            <p className="text-[#64748B] mt-1">
+              Welcome back, {userName}! Here's what's happening today.
+            </p>
           </div>
         </div>
-      </motion.div>
 
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200"
-      >
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {quickActions.map((action, index) => (
-            <motion.button
-              key={action.title}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="group bg-gradient-to-br from-gray-50 to-gray-100 hover:from-white hover:to-gray-50 rounded-2xl p-6 text-left transition-all duration-200 border border-gray-200 hover:border-gray-300 hover:shadow-md"
-            >
-              <div className="flex items-start space-x-4">
-                <div className={`w-12 h-12 bg-gradient-to-br ${action.color} rounded-xl flex items-center justify-center text-2xl shadow-lg`}>
-                  {action.icon}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-gray-700">
-                    {action.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 group-hover:text-gray-600">
-                    {action.description}
-                  </p>
-                </div>
-              </div>
-            </motion.button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Recent Activity */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Recent Activity</h2>
-          <span className="text-sm text-gray-500">Today</span>
-        </div>
-        
-        <div className="space-y-4">
-          {recentActivity.map((activity, index) => (
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
+          {statsData.map((stat, index) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 + index * 0.1 }}
-              className="flex items-center space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+              key={stat.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-white dark:bg-[#24303F] rounded-lg border border-[#E2E8F0] dark:border-[#313D4F] p-6 hover:shadow-md transition-shadow"
             >
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white">
-                {activity.icon}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-[#64748B] text-sm font-medium mb-1">
+                    {stat.title}
+                  </h3>
+                  <p className="text-2xl font-bold text-[#1C2434] dark:text-white">
+                    {stat.value}
+                  </p>
+                  <div className="flex items-center mt-2">
+                    {stat.isPositive ? (
+                      <ArrowUp size={16} className="text-[#10B981]" />
+                    ) : (
+                      <ArrowDown size={16} className="text-[#EF4444]" />
+                    )}
+                    <span className={`text-sm font-medium ml-1 ${
+                      stat.isPositive ? 'text-[#10B981]' : 'text-[#EF4444]'
+                    }`}>
+                      {stat.change}
+                    </span>
+                  </div>
+                </div>
+                <div className={`${stat.iconBg} p-3 rounded-full`}>
+                  <stat.icon size={24} className={stat.iconColor} />
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">{activity.title}</p>
-                <p className="text-sm text-gray-500">{activity.time}</p>
-              </div>
-              <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
             </motion.div>
           ))}
         </div>
-        
-        {recentActivity.length === 0 && (
-          <div className="text-center py-8">
-            <div className="text-6xl mb-4">✨</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No recent activity</h3>
-            <p className="text-gray-500">Start your scientific career support journey today!</p>
+
+        {/* Charts & Tables Section */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+          {/* Recent Orders Table */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white dark:bg-[#24303F] rounded-lg border border-[#E2E8F0] dark:border-[#313D4F] overflow-hidden"
+          >
+            <div className="p-6 border-b border-[#E2E8F0] dark:border-[#313D4F]">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-[#1C2434] dark:text-white">
+                  Recent Orders
+                </h2>
+                <button className="text-sm text-[#3C50E0] hover:underline font-medium">
+                  See all
+                </button>
+              </div>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-[#F9FAFB] dark:bg-[#1C2434]">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-[#64748B] uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-[#64748B] uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-[#64748B] uppercase tracking-wider">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E2E8F0] dark:divide-[#313D4F]">
+                  {recentOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-[#F9FAFB] dark:hover:bg-[#1C2434] transition-colors">
+                      <td className="px-6 py-4">
+                        <div>
+                          <div className="text-sm font-medium text-[#1C2434] dark:text-white">
+                            {order.product}
+                          </div>
+                          <div className="text-xs text-[#64748B]">{order.id}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-[#1C2434] dark:text-white font-medium">
+                        {order.amount}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${order.statusColor}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+
+          {/* Customer Demographics */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white dark:bg-[#24303F] rounded-lg border border-[#E2E8F0] dark:border-[#313D4F] p-6"
+          >
+            <h2 className="text-lg font-bold text-[#1C2434] dark:text-white mb-6">
+              Customers Demographic
+            </h2>
+            <p className="text-sm text-[#64748B] mb-6">
+              Number of customers based on country
+            </p>
+            
+            <div className="space-y-4">
+              {customerDemographic.map((item) => (
+                <div key={item.country}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl">{item.flag}</span>
+                      <span className="text-sm font-medium text-[#1C2434] dark:text-white">
+                        {item.country}
+                      </span>
+                    </div>
+                    <span className="text-sm font-semibold text-[#1C2434] dark:text-white">
+                      {item.customers} Customers
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#E2E8F0] dark:bg-[#313D4F] rounded-full h-2">
+                    <div 
+                      className="bg-[#3C50E0] h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${item.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Monthly Target Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-white dark:bg-[#24303F] rounded-lg border border-[#E2E8F0] dark:border-[#313D4F] p-6"
+        >
+          <h2 className="text-lg font-bold text-[#1C2434] dark:text-white mb-2">
+            Monthly Target
+          </h2>
+          <p className="text-sm text-[#64748B] mb-6">
+            Target you've set for each month
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[#64748B]">Target</span>
+                <span className="text-sm font-bold text-[#1C2434] dark:text-white">$20K</span>
+              </div>
+              <div className="w-full bg-[#E2E8F0] dark:bg-[#313D4F] rounded-full h-2">
+                <div className="bg-[#3C50E0] h-2 rounded-full" style={{ width: '75%' }} />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[#64748B]">Revenue</span>
+                <span className="text-sm font-bold text-[#1C2434] dark:text-white">$15K</span>
+              </div>
+              <div className="w-full bg-[#E2E8F0] dark:bg-[#313D4F] rounded-full h-2">
+                <div className="bg-[#10B981] h-2 rounded-full" style={{ width: '60%' }} />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[#64748B]">Today</span>
+                <span className="text-sm font-bold text-[#1C2434] dark:text-white">$3.2K</span>
+              </div>
+              <div className="w-full bg-[#E2E8F0] dark:bg-[#313D4F] rounded-full h-2">
+                <div className="bg-[#F59E0B] h-2 rounded-full" style={{ width: '45%' }} />
+              </div>
+            </div>
           </div>
-        )}
-      </motion.div>
+          
+          <div className="mt-6 p-4 bg-[#F9FAFB] dark:bg-[#1C2434] rounded-lg">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="text-[#10B981]" size={20} />
+              <p className="text-sm text-[#64748B]">
+                You earn <span className="font-semibold text-[#1C2434] dark:text-white">$3287</span> today, 
+                it's higher than last month. Keep up your good work!
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

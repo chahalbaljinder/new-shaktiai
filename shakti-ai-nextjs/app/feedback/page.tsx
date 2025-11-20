@@ -11,8 +11,11 @@ import {
   ArrowRight,
   Shield,
   Clock,
-  CheckCircle
+  CheckCircle,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
+import Link from 'next/link';
 import FeedbackForm from '@/components/FeedbackForm';
 import QueryForm from '@/components/QueryForm';
 import ComplaintForm from '@/components/ComplaintForm';
@@ -40,21 +43,35 @@ export default function FeedbackSystemPage() {
       <div className="container mx-auto py-8 px-4">
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <Link href="/">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="gap-2"
+              >
+                <Home className="w-4 h-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
+            {currentView !== 'menu' && (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentView('menu')}
+                className="gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Menu
+              </Button>
+            )}
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Feedback, Queries & Complaints
           </h1>
           <p className="text-lg text-gray-600">
             Your voice matters. We're here to listen and support you.
           </p>
-          {currentView !== 'menu' && (
-            <Button 
-              variant="outline" 
-              onClick={() => setCurrentView('menu')}
-              className="mt-4"
-            >
-              ← Back to Menu
-            </Button>
-          )}
         </div>
 
         {/* Content */}

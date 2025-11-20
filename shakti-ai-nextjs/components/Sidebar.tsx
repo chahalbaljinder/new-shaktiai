@@ -63,7 +63,7 @@ export default function Sidebar() {
         initial={false}
         animate={{ x: sidebarOpen ? 0 : -280 }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed left-0 top-0 h-screen min-h-screen w-70 bg-white border-r border-gray-200 shadow-xl z-50 lg:relative lg:translate-x-0 lg:h-screen"
+        className="fixed left-0 top-0 h-screen min-h-screen w-70 bg-[#1C2434] border-r border-[#2E3A47] shadow-xl z-50 lg:relative lg:translate-x-0 lg:h-screen"
         style={{
           height: '100vh',
           minHeight: '100vh'
@@ -71,26 +71,26 @@ export default function Sidebar() {
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-[#2E3A47]">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-10 h-10 bg-[#3C50E0] rounded-lg flex items-center justify-center text-white text-xl font-bold">
                 🧬
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">APEX</h1>
-                <p className="text-sm text-gray-500">Your AI Support</p>
+                <h1 className="text-xl font-bold text-white">APEX</h1>
+                <p className="text-sm text-gray-400">Your AI Support</p>
               </div>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="lg:hidden p-2 rounded-lg hover:bg-[#2E3A47] transition-colors text-white"
             >
               <X size={20} />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-4 space-y-1">
             {navigation.map((item) => {
               const isActive = currentPage === item.id
               
@@ -103,11 +103,11 @@ export default function Sidebar() {
                     whileHover={{ x: 4 }}
                     whileTap={{ scale: 0.98 }}
                     className={cn(
-                      'w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 text-left',
-                      'text-gray-700 hover:bg-gray-100'
+                      'w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left',
+                      'text-gray-300 hover:bg-[#2E3A47] hover:text-white'
                     )}
                   >
-                    <span className="text-xl">{item.emoji}</span>
+                    <item.icon size={20} />
                     <span className="font-medium">{item.name}</span>
                   </motion.a>
                 )
@@ -120,13 +120,13 @@ export default function Sidebar() {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setCurrentPage(item.id)}
                   className={cn(
-                    'w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 text-left',
+                    'w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left group',
                     isActive
-                      ? 'bg-gradient-primary text-white shadow-lg'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-[#3C50E0] text-white shadow-lg'
+                      : 'text-gray-300 hover:bg-[#2E3A47] hover:text-white'
                   )}
                 >
-                  <span className="text-xl">{item.emoji}</span>
+                  <item.icon size={20} />
                   <span className="font-medium">{item.name}</span>
                   {isActive && (
                     <motion.div
@@ -140,17 +140,17 @@ export default function Sidebar() {
           </nav>
 
           {/* Bottom Actions */}
-          <div className="p-4 border-t border-gray-200 space-y-3">
+          <div className="p-4 border-t border-[#2E3A47] space-y-3">
             {/* Voice Input */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setVoiceActive(!voiceActive)}
               className={cn(
-                'w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200',
+                'w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200',
                 voiceActive
-                  ? 'bg-gradient-secondary text-white animate-pulse'
-                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  ? 'bg-emerald-500 text-white animate-pulse'
+                  : 'bg-[#2E3A47] text-emerald-400 hover:bg-emerald-500 hover:text-white'
               )}
             >
               <Mic size={20} />
@@ -164,7 +164,7 @@ export default function Sidebar() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setEmergencyMode(!emergencyMode)}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 transition-all duration-200"
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-[#2E3A47] text-red-400 hover:bg-red-500 hover:text-white transition-all duration-200"
             >
               <AlertTriangle size={20} />
               <span className="font-medium">Emergency</span>
@@ -173,7 +173,7 @@ export default function Sidebar() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-all duration-200"
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-[#2E3A47] hover:text-white transition-all duration-200"
             >
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
               <span className="font-medium">
@@ -183,15 +183,15 @@ export default function Sidebar() {
 
             {/* User Profile */}
             <div className="space-y-2">
-              <div className="flex items-center space-x-3 px-4 py-3 rounded-xl bg-gray-50">
-                <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-white">
+              <div className="flex items-center space-x-3 px-4 py-3 rounded-lg bg-[#2E3A47]">
+                <div className="w-8 h-8 bg-[#3C50E0] rounded-full flex items-center justify-center text-white">
                   <User size={16} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-white truncate">
                     {user?.name || 'User'}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-400 truncate">
                     {user?.email}
                   </p>
                 </div>
@@ -203,7 +203,7 @@ export default function Sidebar() {
                   logout()
                   setSidebarOpen(false)
                 }}
-                className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors group"
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500 hover:text-white transition-colors group"
               >
                 <LogOut size={18} className="group-hover:scale-110 transition-transform" />
                 <span className="font-medium">Logout</span>
@@ -216,9 +216,9 @@ export default function Sidebar() {
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-3 bg-white rounded-xl shadow-lg border border-gray-200"
+        className="fixed top-4 left-4 z-50 lg:hidden p-3 bg-white rounded-lg shadow-lg border border-gray-200"
       >
-        <Menu size={20} />
+        <Menu size={20} className="text-gray-700" />
       </button>
     </>
   )

@@ -101,7 +101,7 @@ module.exports = {
         fadeIn: "fadeIn 0.3s ease-out",
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Outfit', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
