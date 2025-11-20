@@ -14,7 +14,8 @@ import {
   Sun,
   Moon,
   User,
-  LogOut
+  LogOut,
+  MessageSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/lib/store'
@@ -24,6 +25,7 @@ const navigation = [
   { id: 'dashboard', name: 'Dashboard', icon: Home, emoji: '🏠' },
   { id: 'knowledge', name: 'Knowledge Base', icon: Brain, emoji: '🧠' },
   { id: 'wishes', name: 'Wishes Vault', icon: Lock, emoji: '🔐' },
+  { id: 'feedback', name: 'Feedback & Complaints', icon: MessageSquare, emoji: '📋', href: '/feedback' },
   { id: 'settings', name: 'Settings', icon: Settings, emoji: '⚙️' },
 ]
 
@@ -91,6 +93,26 @@ export default function Sidebar() {
           <nav className="flex-1 p-4 space-y-2">
             {navigation.map((item) => {
               const isActive = currentPage === item.id
+              
+              // Handle items with href (external links/pages)
+              if (item.href) {
+                return (
+                  <motion.a
+                    key={item.id}
+                    href={item.href}
+                    whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={cn(
+                      'w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 text-left',
+                      'text-gray-700 hover:bg-gray-100'
+                    )}
+                  >
+                    <span className="text-xl">{item.emoji}</span>
+                    <span className="font-medium">{item.name}</span>
+                  </motion.a>
+                )
+              }
+              
               return (
                 <motion.button
                   key={item.id}

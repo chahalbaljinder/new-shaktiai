@@ -61,6 +61,16 @@ except ImportError as e:
     WishesDatabase = None
 
 try:
+    from database.feedback_system import (
+        submit_annual_feedback, submit_query, submit_complaint,
+        get_my_submissions, get_status_updates, ESCALATION_ROUTES
+    )
+    logger.info("Successfully imported feedback system")
+except ImportError as e:
+    logger.error(f"Failed to import feedback system: {e}")
+    submit_annual_feedback = None
+
+try:
     import speech_recognition as sr
     logger.info("Successfully imported speech_recognition")
     SPEECH_RECOGNITION_AVAILABLE = True
@@ -99,6 +109,54 @@ class WishRequest(BaseModel):
     title: str
     content: str
     category: Optional[str] = "personal"
+
+class FeedbackRequest(BaseModel):
+    employee_name: Optional[str] = None
+    employee_id: Optional[str] = None
+    designation: Optional[str] = None
+    lab_center: Optional[str] = None
+    email: Optional[str] = None
+    years_of_service: Optional[int] = None
+    is_anonymous: bool = False
+    work_environment: Optional[Dict[str, Any]] = {}
+    leadership_management: Optional[Dict[str, Any]] = {}
+    inclusion_culture: Optional[Dict[str, Any]] = {}
+    workload_balance: Optional[Dict[str, Any]] = {}
+    career_development: Optional[Dict[str, Any]] = {}
+    safety_conduct: Optional[Dict[str, Any]] = {}
+    additional_comments: Optional[str] = ""
+
+class QueryRequest(BaseModel):
+    employee_name: str
+    employee_id: str
+    email: str
+    phone: Optional[str] = None
+    query_type: str = "general"
+    category: str
+    subject: str
+    description: str
+    supporting_documents: Optional[List[Dict[str, str]]] = []
+    priority: str = "normal"
+
+class ComplaintRequest(BaseModel):
+    is_anonymous: bool = False
+    complainant_name: Optional[str] = None
+    employee_id: Optional[str] = None
+    designation: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    complaint_type: str = "grievance"
+    category: str
+    incident_date: Optional[str] = None
+    incident_location: Optional[str] = None
+    incident_time: Optional[str] = None
+    persons_involved: Optional[str] = None
+    witness_names: Optional[str] = None
+    detailed_description: str
+    previous_attempts: Optional[str] = None
+    desired_outcome: Optional[str] = None
+    supporting_evidence: Optional[List[Dict[str, str]]] = []
+    urgency: str = "normal"
     priority: Optional[str] = "medium"
     reminder_date: Optional[str] = None
 
@@ -927,6 +985,133 @@ APEX: For every woman, every phase, every fight.
     except Exception as e:
         logger.error(f"WhatsApp URL generation failed: {e}")
         return None
+
+
+# ==================== FEEDBACK SYSTEM ENDPOINTS ====================
+
+@app.get("/api/feedback/routes")
+async def get_escalation_routes():
+    """Get available escalation routes for different issue categories."""
+    try:
+        return {
+            "success": True,
+            "routes": ESCALATION_ROUTES
+        }
+    except Exception as e:
+        logger.error(f"Error fetching escalation routes: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/feedback/annual")
+async def submit_feedback(request: FeedbackRequest):
+    """Submit annual employee feedback form."""
+    try:
+        if not submit_annual_feedback:
+            raise HTTPException(status_code=503, detail="Feedback system not available")
+        
+        feedback_data = request.dict()
+        feedback_id = submit_annual_feedback(feedback_data)
+        
+        return {
+            "success": True,
+            "feedback_id": feedback_id,
+            "message": "Feedback submitted successfully",
+            "anonymous": request.is_anonymous
+        }
+    except Exception as e:
+        logger.error(f"Error submitting feedback: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/queries/submit")
+async def submit_user_query(request: QueryRequest):
+    """Submit a query for escalation to appropriate department."""
+    try:
+        if not submit_query:
+            raise HTTPException(status_code=503, detail="Query system not available")
+        
+        query_data = request.dict()
+        query_id = submit_query(query_data)
+        
+        # Get routing info
+        routing = ESCALATION_ROUTES.get(request.category, ESCALATION_ROUTES['other'])
+        
+        return {
+            "success": True,
+            "query_id": query_id,
+            "message": "Query submitted and routed successfully",
+            "routed_to": {
+                "department": routing['department'],
+                "cell": routing['cell']
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error submitting query: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/complaints/submit")
+async def submit_user_complaint(request: ComplaintRequest):
+    """Submit a complaint or grievance."""
+    try:
+        if not submit_complaint:
+            raise HTTPException(status_code=503, detail="Complaint system not available")
+        
+        complaint_data = request.dict()
+        complaint_number = submit_complaint(complaint_data)
+        
+        # Get routing info
+        routing = ESCALATION_ROUTES.get(request.category, ESCALATION_ROUTES['other'])
+        
+        return {
+            "success": True,
+            "complaint_number": complaint_number,
+            "message": "Complaint received and being processed",
+            "routed_to": routing['cell'],
+            "icc_notified": request.category == 'harassment',
+            "anonymous": request.is_anonymous
+        }
+    except Exception as e:
+        logger.error(f"Error submitting complaint: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/submissions/{employee_id}")
+async def get_employee_submissions(employee_id: str, submission_type: str = "all"):
+    """Get submission history for an employee."""
+    try:
+        if not get_my_submissions:
+            raise HTTPException(status_code=503, detail="Submissions system not available")
+        
+        submissions = get_my_submissions(employee_id, submission_type)
+        
+        return {
+            "success": True,
+            "submissions": submissions,
+            "count": len(submissions)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching submissions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/status/{reference_type}/{reference_id}")
+async def get_submission_status(reference_type: str, reference_id: int):
+    """Get status updates for a specific submission."""
+    try:
+        if not get_status_updates:
+            raise HTTPException(status_code=503, detail="Status system not available")
+        
+        updates = get_status_updates(reference_type, reference_id)
+        
+        return {
+            "success": True,
+            "updates": updates
+        }
+    except Exception as e:
+        logger.error(f"Error fetching status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
