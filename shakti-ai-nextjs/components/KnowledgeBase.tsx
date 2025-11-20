@@ -91,6 +91,9 @@ export default function KnowledgeBase() {
   const [browserSpeechSupported, setBrowserSpeechSupported] = useState(false)
   const [useBrowserSpeech, setUseBrowserSpeech] = useState(false) // Option to use browser's native speech recognition
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  // UI compact mode & panel visibility for maximizing readable chat space
+  const [compactMode, setCompactMode] = useState(false)
+  const [showSelectionPanel, setShowSelectionPanel] = useState(true)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -478,62 +481,84 @@ export default function KnowledgeBase() {
   }
 
   return (
-    <div className="h-screen max-h-screen flex flex-col bg-white overflow-hidden">
-      {/* Header */}
-      <div className="border-b border-gray-200 p-4 lg:p-6 flex-shrink-0">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Knowledge Base</h1>
-          <p className="text-gray-600">Chat with our AI experts for personalized guidance</p>
-          <div className="mt-2 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-lg p-2 flex items-center">
-            <Mic className="w-4 h-4 mr-2" />
-            <span>💡 Tip: Use the microphone button to speak your questions directly! {browserSpeechSupported ? 'Browser speech recognition available for best results.' : 'Audio recording will be used.'}</span>
-          </div>
-          {browserSpeechSupported && (
-            <div className="mt-2 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg p-2 flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                <span>Browser speech recognition is available for instant transcription</span>
-              </div>
-              <button
-                onClick={handleBrowserSpeech}
-                disabled={selectedAgents.length === 0}
-                className="text-xs bg-green-100 hover:bg-green-200 px-2 py-1 rounded border border-green-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Try it
-              </button>
-            </div>
-          )}
+    <div className={`h-screen max-h-screen flex flex-col bg-white overflow-hidden ${compactMode ? 'pt-1' : ''}`}>      
+      {/* Top Utility Bar */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50 text-xs flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-gray-700">APEX Chat</span>
+          {!compactMode && <span className="text-gray-500 hidden sm:inline">Policy • Wellness • Documentation</span>}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCompactMode(m => !m)}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-600"
+            title="Toggle compact view"
+          >{compactMode ? 'Expand' : 'Compact'}</button>
+          <button
+            onClick={() => setShowSelectionPanel(p => !p)}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-600"
+            title="Show / hide expert selection"
+          >{showSelectionPanel ? 'Hide Experts' : 'Show Experts'}</button>
         </div>
       </div>
 
-      {/* Agent Selection */}
-      <div className="border-b border-gray-200 p-4 bg-gray-50 flex-shrink-0">
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Select Experts to Consult:</h3>
-          <div className="flex flex-wrap gap-2">
-            {agents.map((agent) => (
-              <motion.button
-                key={agent.id}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleAgentToggle(agent.id)}
-                className={`px-3 py-2 rounded-full text-sm font-medium border transition-colors ${
-                  selectedAgents.includes(agent.id)
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
-                }`}
-              >
-                <span className="mr-1">{agent.icon}</span>
-                {agent.name}
-              </motion.button>
-            ))}
+      {/* Header (hidden in compact mode) */}
+      {!compactMode && (
+        <div className="border-b border-gray-200 px-4 py-3 lg:px-6 flex-shrink-0 bg-white">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-xl font-bold text-gray-900 mb-1">Knowledge Base Chat</h1>
+            <p className="text-gray-600 text-sm">Chat with selected AI experts for personalized guidance</p>
+            <div className="mt-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-md p-2 flex items-center">
+              <Mic className="w-3 h-3 mr-2" />
+              <span>Tip: Use the microphone for faster questions. {browserSpeechSupported ? 'Browser speech recognition available.' : 'Audio recording fallback.'}</span>
+            </div>
+            {browserSpeechSupported && (
+              <div className="mt-2 text-xs text-green-600 bg-green-50 border border-green-200 rounded-md p-2 flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <span>Instant browser speech transcription enabled</span>
+                </div>
+                <button
+                  onClick={handleBrowserSpeech}
+                  disabled={selectedAgents.length === 0}
+                  className="text-[10px] bg-green-100 hover:bg-green-200 px-2 py-1 rounded border border-green-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >Try it</button>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Agent Selection (collapsible) */}
+      {showSelectionPanel && (
+        <div className={`border-b border-gray-200 ${compactMode ? 'px-3 py-2' : 'p-4'} bg-gray-50 flex-shrink-0`}>          
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-xs font-medium text-gray-700 mb-2">Select Experts:</h3>
+            <div className="flex flex-wrap gap-1.5">
+              {agents.map((agent) => (
+                <motion.button
+                  key={agent.id}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleAgentToggle(agent.id)}
+                  className={`px-2 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                    selectedAgents.includes(agent.id)
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                  }`}
+                >
+                  <span className="mr-1">{agent.icon}</span>
+                  {agent.name}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className={`flex-1 overflow-y-auto ${compactMode ? 'p-3' : 'p-4 lg:p-6'}`}>
+        <div className={`max-w-4xl mx-auto space-y-4 ${compactMode ? 'pb-24' : ''}`}>
           <AnimatePresence>
             {messages.map((message) => (
               <motion.div
@@ -606,7 +631,7 @@ export default function KnowledgeBase() {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 p-4 lg:p-6 bg-white flex-shrink-0">
+      <div className={`border-t border-gray-200 bg-white flex-shrink-0 ${compactMode ? 'p-3' : 'p-4 lg:p-6'} sticky bottom-0`}>        
         <div className="max-w-4xl mx-auto">
           {/* Recording indicator */}
           <AnimatePresence>
@@ -659,7 +684,7 @@ export default function KnowledgeBase() {
                     ? "Processing voice input..."
                     : "Message SHAKTI AI experts... (or use voice input 🎤)"
                 }
-                className={`w-full px-4 py-3 border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full px-3 py-2 border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                   isRecording ? 'border-red-300 bg-red-50' : 
                   selectedAgents.length === 0 ? 'border-gray-200 bg-gray-50' :
                   'border-gray-300 bg-white hover:border-gray-400'
@@ -668,7 +693,7 @@ export default function KnowledgeBase() {
                 disabled={isLoading || selectedAgents.length === 0}
               />
               {selectedAgents.length === 0 && (
-                <div className="absolute inset-0 bg-gray-50 bg-opacity-50 rounded-2xl flex items-center justify-center pointer-events-none">
+                <div className="absolute inset-0 bg-gray-50 bg-opacity-50 rounded-xl flex items-center justify-center pointer-events-none">
                   <p className="text-sm text-gray-500">Select an expert above to start chatting</p>
                 </div>
               )}
