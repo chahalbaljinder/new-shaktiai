@@ -115,6 +115,10 @@ class RealAIHandler(BaseHTTPRequestHandler):
                 agent_type = data.get('agent_type', 'general')
                 
                 print(f"🔄 Processing query for {agent_type}: {message}")
+                print(f"🔍 Request Debug:")
+                print(f"   Message length: {len(message)} chars")
+                print(f"   Agent type: {agent_type}")
+                print(f"   AI Available: {AI_AVAILABLE}")
                 
                 if AI_AVAILABLE:
                     # Map frontend agent types to APEX agent types
@@ -131,9 +135,12 @@ class RealAIHandler(BaseHTTPRequestHandler):
                     
                     # Call the real APEX function
                     print(f"🤖 Calling APEX with agents: {apex_agents}")
+                    print(f"🎯 About to call ask_apex function...")
+                    
                     try:
                         ai_response = ask_apex(message, apex_agents)
                         print(f"✅ Real AI response received ({len(ai_response)} chars)")
+                        print(f"📄 Response preview: {ai_response[:150]}...")
                         response_text = ai_response
                     except Exception as ai_error:
                         print(f"🚨 APEX Error: {ai_error}")
