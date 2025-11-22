@@ -25,7 +25,8 @@ const navigation = [
   { id: 'dashboard', name: 'Dashboard', icon: Home, emoji: '🏠' },
   { id: 'knowledge', name: 'Knowledge Base', icon: Brain, emoji: '🧠' },
   { id: 'wishes', name: 'Wishes Vault', icon: Lock, emoji: '🔐' },
-  { id: 'feedback', name: 'Feedback & Complaints', icon: MessageSquare, emoji: '📋', href: '/feedback' },
+  { id: 'feedback-module', name: 'Submit Feedback', icon: MessageSquare, emoji: '✍️' },
+  { id: 'feedback', name: 'Grievance Dashboard', icon: AlertTriangle, emoji: '📊' },
   { id: 'settings', name: 'Settings', icon: Settings, emoji: '⚙️' },
 ]
 

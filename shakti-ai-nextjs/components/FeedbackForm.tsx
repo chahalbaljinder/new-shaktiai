@@ -100,13 +100,16 @@ export default function FeedbackForm() {
   ];
 
   const handleSectionUpdate = (sectionKey: string, field: 'rating' | 'comments', value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [sectionKey]: {
-        ...prev[sectionKey as keyof Omit<FeedbackData, 'is_anonymous' | 'additional_comments'>],
-        [field]: value
-      }
-    }));
+    setFormData(prev => {
+      const sectionData = prev[sectionKey as keyof Omit<FeedbackData, 'is_anonymous' | 'additional_comments'>];
+      return {
+        ...prev,
+        [sectionKey]: {
+          ...(typeof sectionData === 'object' && sectionData !== null ? sectionData : {}),
+          [field]: value
+        }
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

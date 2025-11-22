@@ -13,6 +13,8 @@ import Settings from '@/components/Settings'
 import VoiceInterface from '@/components/VoiceInterface'
 import EmergencyMode from '@/components/EmergencyMode'
 import AIAgents from '@/components/AIAgents'
+import FeedbackDashboard from '@/components/FeedbackDashboard'
+import FeedbackModule from '@/components/FeedbackModule'
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -57,6 +59,10 @@ export default function HomePage() {
         return <KnowledgeBase />
       case 'wishes':
         return <WishesVault />
+      case 'feedback-module':
+        return <FeedbackModule />
+      case 'feedback':
+        return <FeedbackDashboard />
       case 'settings':
         return <Settings />
       case 'agents':
