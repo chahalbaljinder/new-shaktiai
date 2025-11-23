@@ -9,7 +9,7 @@ import Sidebar from '@/components/Sidebar'
 import Dashboard from '@/components/Dashboard'
 import KnowledgeBase from '@/components/KnowledgeBase'
 import WishesVault from '@/components/WishesVault'
-import Settings from '@/components/Settings'
+import ComprehensiveSettings from '@/components/ComprehensiveSettings'
 import VoiceInterface from '@/components/VoiceInterface'
 import EmergencyMode from '@/components/EmergencyMode'
 import AIAgents from '@/components/AIAgents'
@@ -85,7 +85,7 @@ export default function HomePage() {
       case 'feedback':
         return <FeedbackDashboard />
       case 'settings':
-        return <Settings />
+        return <ComprehensiveSettings />
       case 'agents':
         return <AIAgents />
       default:
