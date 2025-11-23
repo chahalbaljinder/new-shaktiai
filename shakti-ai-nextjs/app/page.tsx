@@ -15,6 +15,7 @@ import EmergencyMode from '@/components/EmergencyMode'
 import AIAgents from '@/components/AIAgents'
 import FeedbackDashboard from '@/components/FeedbackDashboard'
 import FeedbackModule from '@/components/FeedbackModule'
+import OnboardingFlow from '@/components/OnboardingFlow'
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -33,6 +34,8 @@ export default function HomePage() {
   const { currentPage, sidebarOpen, emergencyMode } = useAppStore()
   const { user, loading } = useAuth()
   const [shouldRedirect, setShouldRedirect] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true)
 
   useEffect(() => {
     // Wait for loading to complete before redirecting
@@ -43,9 +46,34 @@ export default function HomePage() {
           setShouldRedirect(true)
         }, 100)
         return () => clearTimeout(timer)
+      } else {
+        // Check onboarding status
+        checkOnboardingStatus()
       }
     }
   }, [loading, user])
+
+  const checkOnboardingStatus = async () => {
+    if (!user?.id) return
+    
+    try {
+      const response = await fetch(`http://localhost:8000/api/auth/check-onboarding?user_id=${user.id}`)
+      const data = await response.json()
+      
+      if (data.needs_onboarding) {
+        setShowOnboarding(true)
+      }
+    } catch (error) {
+      console.error('Failed to check onboarding:', error)
+    } finally {
+      setCheckingOnboarding(false)
+    }
+  }
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false)
+    window.location.reload() // Refresh to load complete profile
+  }
 
   useEffect(() => {
     if (shouldRedirect) {
@@ -53,8 +81,8 @@ export default function HomePage() {
     }
   }, [shouldRedirect, router])
 
-  // Show loading while checking authentication
-  if (loading) {
+  // Show loading while checking authentication or onboarding
+  if (loading || checkingOnboarding) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#F1F5F9]">
         <div className="text-xl text-[#3C50E0] font-semibold">Loading APEX...</div>
@@ -65,6 +93,11 @@ export default function HomePage() {
   // Return null while redirecting
   if (!user) {
     return null
+  }
+
+  // Show onboarding if needed
+  if (showOnboarding) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />
   }
 
   // If emergency mode is active, show only emergency interface

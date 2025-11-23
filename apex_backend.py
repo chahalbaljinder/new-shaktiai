@@ -140,11 +140,226 @@ def login():
                 'designation': user['designation'],
                 'establishment': user['establishment'],
                 'role': user['role']
+            },
+            'onboarding': {
+                'completed': user.get('onboarding_completed', False),
+                'step': user.get('onboarding_step', 0),
+                'must_change_password': user.get('must_change_password', False),
+                'is_first_login': user.get('is_first_login', False)
             }
         })
     except Exception as e:
         print(f"Login error: {str(e)}")
         return jsonify({'error': 'Login failed'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ==================== ONBOARDING & SUPERADMIN ====================
+
+@app.route('/api/admin/create-employee', methods=['POST'])
+def create_employee():
+    """Superadmin creates employee with temp credentials"""
+    data = request.json
+    
+    # Validate required fields
+    required_fields = ['name', 'email', 'designation', 'establishment']
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({'error': f'{field} is required'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Check if email already exists
+        cursor.execute("SELECT id FROM users WHERE email = %s", (data['email'],))
+        if cursor.fetchone():
+            return jsonify({'error': 'Email already registered'}), 400
+        
+        # Generate temporary password (can be customized)
+        temp_password = data.get('temp_password', 'Welcome@123')
+        password_hash = bcrypt.hashpw(temp_password.encode('utf-8'), bcrypt.gensalt())
+        
+        # Insert new employee
+        cursor.execute("""
+            INSERT INTO users (
+                name, email, password_hash, designation, establishment,
+                role, is_active, created_by_admin, must_change_password,
+                is_first_login, onboarding_completed, onboarding_step,
+                temp_password
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id, name, email, employee_id
+        """, (
+            data['name'],
+            data['email'],
+            password_hash.decode('utf-8'),
+            data['designation'],
+            data['establishment'],
+            data.get('role', 'user'),
+            True,
+            True,  # created_by_admin
+            True,  # must_change_password
+            True,  # is_first_login
+            False, # onboarding_completed
+            0,     # onboarding_step
+            temp_password
+        ))
+        
+        employee = cursor.fetchone()
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Employee created successfully',
+            'employee': {
+                'id': employee['id'],
+                'name': employee['name'],
+                'email': employee['email'],
+                'employee_id': employee['employee_id'],
+                'temp_password': temp_password
+            }
+        }), 201
+    except Exception as e:
+        conn.rollback()
+        print(f"Create employee error: {str(e)}")
+        return jsonify({'error': 'Failed to create employee'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/auth/check-onboarding', methods=['GET'])
+def check_onboarding():
+    """Check if user needs onboarding"""
+    user_id = request.args.get('user_id')
+    
+    if not user_id:
+        return jsonify({'error': 'user_id required'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                onboarding_completed,
+                onboarding_step,
+                is_first_login,
+                must_change_password
+            FROM users WHERE id = %s
+        """, (user_id,))
+        
+        user = cursor.fetchone()
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        return jsonify({
+            'needs_onboarding': not user['onboarding_completed'],
+            'current_step': user['onboarding_step'] or 0,
+            'is_first_login': user['is_first_login'],
+            'must_change_password': user['must_change_password']
+        })
+    except Exception as e:
+        print(f"Check onboarding error: {str(e)}")
+        return jsonify({'error': 'Failed to check onboarding'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/auth/onboarding/update-step', methods=['PUT'])
+def update_onboarding_step():
+    """Update user's onboarding step"""
+    data = request.json
+    user_id = data.get('user_id')
+    step = data.get('step')
+    
+    if not user_id or step is None:
+        return jsonify({'error': 'user_id and step required'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            UPDATE users 
+            SET 
+                onboarding_step = %s,
+                onboarding_started_at = COALESCE(onboarding_started_at, CURRENT_TIMESTAMP),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (step, user_id))
+        
+        conn.commit()
+        return jsonify({'success': True, 'step': step})
+    except Exception as e:
+        conn.rollback()
+        print(f"Update onboarding step error: {str(e)}")
+        return jsonify({'error': 'Failed to update step'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/auth/onboarding/complete', methods=['POST'])
+def complete_onboarding():
+    """Mark onboarding as complete"""
+    data = request.json
+    user_id = data.get('user_id')
+    
+    if not user_id:
+        return jsonify({'error': 'user_id required'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            UPDATE users 
+            SET 
+                onboarding_completed = TRUE,
+                onboarding_step = 5,
+                onboarding_completed_at = CURRENT_TIMESTAMP,
+                is_first_login = FALSE,
+                must_change_password = FALSE,
+                temp_password = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (user_id,))
+        
+        conn.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Onboarding completed successfully'
+        })
+    except Exception as e:
+        conn.rollback()
+        print(f"Complete onboarding error: {str(e)}")
+        return jsonify({'error': 'Failed to complete onboarding'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/admin/employees', methods=['GET'])
+def list_employees():
+    """List all employees (superadmin only)"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                id, employee_id, name, email, designation, 
+                department, establishment, role, is_active,
+                onboarding_completed, created_at, last_login
+            FROM users
+            WHERE created_by_admin = TRUE
+            ORDER BY created_at DESC
+        """)
+        
+        employees = cursor.fetchall()
+        return jsonify({'employees': employees})
+    except Exception as e:
+        print(f"List employees error: {str(e)}")
+        return jsonify({'error': 'Failed to fetch employees'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -745,40 +960,48 @@ def change_password():
     user_id = data.get('user_id', 3)
     current_password = data.get('current_password')
     new_password = data.get('new_password')
+    is_first_time = data.get('is_first_time', False)  # For onboarding
     
-    if not current_password or not new_password:
-        return jsonify({'error': 'Current and new passwords required'}), 400
+    if not new_password:
+        return jsonify({'error': 'New password required'}), 400
     
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
-        # Verify current password
-        cursor.execute("SELECT password_hash FROM users WHERE id = %s", (user_id,))
+        # Get user data
+        cursor.execute("SELECT password_hash, must_change_password FROM users WHERE id = %s", (user_id,))
         user = cursor.fetchone()
         
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
-        # Check if password_hash exists and is valid
-        if not user['password_hash'] or len(user['password_hash']) < 20:
-            return jsonify({'error': 'Invalid password configuration. Please contact administrator.'}), 500
-        
-        try:
-            if not bcrypt.checkpw(current_password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-                return jsonify({'error': 'Current password is incorrect'}), 401
-        except Exception as bcrypt_error:
-            print(f"Bcrypt error: {str(bcrypt_error)}")
-            return jsonify({'error': 'Password verification failed'}), 500
+        # If not first time, verify current password
+        if not is_first_time and current_password:
+            # Check if password_hash exists and is valid
+            if not user['password_hash'] or len(user['password_hash']) < 20:
+                return jsonify({'error': 'Invalid password configuration. Please contact administrator.'}), 500
+            
+            try:
+                if not bcrypt.checkpw(current_password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+                    return jsonify({'error': 'Current password is incorrect'}), 401
+            except Exception as bcrypt_error:
+                print(f"Bcrypt error: {str(bcrypt_error)}")
+                return jsonify({'error': 'Password verification failed'}), 500
         
         # Hash new password
         new_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
         
-        # Update password
-        cursor.execute(
-            "UPDATE users SET password_hash = %s WHERE id = %s",
-            (new_hash.decode('utf-8'), user_id)
-        )
+        # Update password and clear first-time flags
+        cursor.execute("""
+            UPDATE users 
+            SET password_hash = %s,
+                must_change_password = FALSE,
+                temp_password = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (new_hash.decode('utf-8'), user_id))
+        
         conn.commit()
         
         return jsonify({
