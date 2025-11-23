@@ -582,7 +582,7 @@ def get_feedback():
 
 @app.route('/api/feedback', methods=['POST'])
 def submit_feedback():
-    """Submit new feedback/grievance"""
+    """Submit new feedback/grievance/complaint"""
     data = request.json
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -590,6 +590,12 @@ def submit_feedback():
     try:
         # Log the incoming data for debugging
         print("Received feedback data:", data)
+        
+        # Generate tracking number for complaints
+        tracking_number = None
+        if data.get('type') == 'complaint':
+            import random
+            tracking_number = f"COMP-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
         
         cursor.execute("""
             INSERT INTO feedback (
@@ -604,18 +610,23 @@ def submit_feedback():
             data.get('description', ''),
             data.get('category', 'General'),
             data.get('priority', 'medium'),
-            'submitted',
+            'submitted' if data.get('type') != 'complaint' else 'under-review',  # Complaints go directly to review
             data.get('is_anonymous', data.get('isAnonymous', False))
         ))
         
         feedback_id = cursor.fetchone()['id']
         conn.commit()
         
-        return jsonify({
+        response_data = {
             'success': True,
             'id': feedback_id,
-            'message': 'Feedback submitted successfully'
-        }), 201
+            'message': 'Complaint submitted successfully! Your complaint will be reviewed within 24 hours.' if data.get('type') == 'complaint' else 'Feedback submitted successfully'
+        }
+        
+        if tracking_number:
+            response_data['tracking_number'] = tracking_number
+        
+        return jsonify(response_data), 201
     except Exception as e:
         conn.rollback()
         print(f"Error submitting feedback: {str(e)}")
@@ -1587,6 +1598,213 @@ def status():
             'status': 'error',
             'error': str(e)
         }), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ============================================
+# SUPERADMIN MANAGEMENT ENDPOINTS
+# ============================================
+
+@app.route('/api/admin/users/list', methods=['GET'])
+def list_all_users():
+    """Get list of all users with their details"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                id, employee_id, name, email, phone, designation, 
+                department, division, establishment, role, 
+                is_active, onboarding_completed, onboarding_step,
+                created_by_admin, created_at, last_login
+            FROM users
+            ORDER BY created_at DESC
+        """)
+        
+        users = cursor.fetchall()
+        
+        return jsonify({
+            'users': users,
+            'count': len(users)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/admin/stats', methods=['GET'])
+def get_admin_stats():
+    """Get dashboard statistics"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Total users
+        cursor.execute("SELECT COUNT(*) as count FROM users")
+        total_users = cursor.fetchone()['count']
+        
+        # Active users
+        cursor.execute("SELECT COUNT(*) as count FROM users WHERE is_active = TRUE")
+        active_users = cursor.fetchone()['count']
+        
+        # Pending onboarding
+        cursor.execute("SELECT COUNT(*) as count FROM users WHERE onboarding_completed = FALSE")
+        onboarding_pending = cursor.fetchone()['count']
+        
+        # New this month
+        cursor.execute("""
+            SELECT COUNT(*) as count FROM users 
+            WHERE created_at >= date_trunc('month', CURRENT_DATE)
+        """)
+        new_this_month = cursor.fetchone()['count']
+        
+        return jsonify({
+            'totalUsers': total_users,
+            'activeUsers': active_users,
+            'onboardingPending': onboarding_pending,
+            'newThisMonth': new_this_month
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/admin/users/<int:user_id>', methods=['PUT'])
+def update_user_admin(user_id):
+    """Update user details by admin"""
+    data = request.json
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Build dynamic UPDATE query based on provided fields
+        update_fields = []
+        update_values = []
+        
+        allowed_fields = [
+            'name', 'email', 'phone', 'designation', 'department', 
+            'division', 'establishment', 'role', 'is_active', 
+            'employee_id', 'grade_level', 'date_of_birth', 'gender'
+        ]
+        
+        for field in allowed_fields:
+            if field in data:
+                update_fields.append(f"{field} = %s")
+                update_values.append(data[field])
+        
+        if not update_fields:
+            return jsonify({'error': 'No valid fields to update'}), 400
+        
+        update_values.append(user_id)
+        
+        query = f"""
+            UPDATE users 
+            SET {', '.join(update_fields)}
+            WHERE id = %s
+            RETURNING id, name, email, role, is_active
+        """
+        
+        cursor.execute(query, update_values)
+        updated_user = cursor.fetchone()
+        conn.commit()
+        
+        return jsonify({
+            'message': 'User updated successfully',
+            'user': updated_user
+        })
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+def delete_user_admin(user_id):
+    """Delete user by admin"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Check if user exists
+        cursor.execute("SELECT id, name, role FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Prevent deleting superadmin
+        if user['role'] == 'superadmin':
+            return jsonify({'error': 'Cannot delete superadmin user'}), 403
+        
+        # Delete user
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+        
+        return jsonify({
+            'message': 'User deleted successfully',
+            'deleted_user': user['name']
+        })
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/admin/users/<int:user_id>/reset-password', methods=['POST'])
+def reset_user_password(user_id):
+    """Reset user password by admin"""
+    data = request.json
+    new_password = data.get('new_password')
+    
+    if not new_password:
+        return jsonify({'error': 'new_password is required'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Check if user exists
+        cursor.execute("SELECT id, name, email FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Hash new password
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        # Update password and set must_change_password flag
+        cursor.execute("""
+            UPDATE users 
+            SET password = %s, 
+                temp_password = %s,
+                must_change_password = TRUE,
+                updated_at = NOW()
+            WHERE id = %s
+        """, (hashed_password, new_password, user_id))
+        
+        conn.commit()
+        
+        return jsonify({
+            'message': 'Password reset successfully',
+            'user': user['name'],
+            'email': user['email'],
+            'temp_password': new_password
+        })
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
         conn.close()

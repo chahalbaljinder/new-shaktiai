@@ -12,20 +12,37 @@ import {
   X,
   User,
   LogOut,
-  MessageSquare
+  MessageSquare,
+  Shield
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/lib/store'
 import { useAuth } from './AuthProvider'
+import { useRouter } from 'next/navigation'
 
-const navigation = [
-  { id: 'dashboard', name: 'Dashboard', icon: Home, emoji: '🏠' },
-  { id: 'knowledge', name: 'Knowledge Base', icon: Brain, emoji: '🧠' },
-  { id: 'wishes', name: 'Wishes Vault', icon: Lock, emoji: '🔐' },
-  { id: 'feedback-module', name: 'Submit Feedback', icon: MessageSquare, emoji: '✍️' },
-  { id: 'feedback', name: 'Grievance Dashboard', icon: AlertTriangle, emoji: '📊' },
-  { id: 'settings', name: 'Settings', icon: Settings, emoji: '⚙️' },
-]
+const getNavigation = (userRole?: string) => {
+  const baseNav = [
+    { id: 'dashboard', name: 'Dashboard', icon: Home, emoji: '🏠' },
+    { id: 'knowledge', name: 'Knowledge Base', icon: Brain, emoji: '🧠' },
+    { id: 'wishes', name: 'Wishes Vault', icon: Lock, emoji: '🔐' },
+    { id: 'feedback-module', name: 'Submit Feedback', icon: MessageSquare, emoji: '✍️' },
+    { id: 'feedback', name: 'Grievance Dashboard', icon: AlertTriangle, emoji: '📊' },
+    { id: 'settings', name: 'Settings', icon: Settings, emoji: '⚙️' },
+  ];
+  
+  // Add SuperAdmin panel only for superadmin role
+  if (userRole === 'superadmin') {
+    baseNav.splice(baseNav.length - 1, 0, {
+      id: 'admin',
+      name: 'Admin Panel',
+      icon: Shield,
+      emoji: '🛡️',
+      href: '/admin'
+    });
+  }
+  
+  return baseNav;
+}
 
 export default function Sidebar() {
   const { 
@@ -38,6 +55,9 @@ export default function Sidebar() {
   } = useAppStore()
   
   const { user, logout } = useAuth()
+  const router = useRouter()
+  
+  const navigation = getNavigation(user?.role)
 
   return (
     <>
@@ -84,9 +104,14 @@ export default function Sidebar() {
               // Handle items with href (external links/pages)
               if (item.href) {
                 return (
-                  <motion.a
+                  <motion.button
                     key={item.id}
-                    href={item.href}
+                    onClick={() => {
+                      router.push(item.href)
+                      if (window.innerWidth < 1024) {
+                        setSidebarOpen(false)
+                      }
+                    }}
                     whileHover={{ x: 4 }}
                     whileTap={{ scale: 0.98 }}
                     className={cn(
@@ -96,7 +121,7 @@ export default function Sidebar() {
                   >
                     <item.icon size={20} />
                     <span className="font-medium">{item.name}</span>
-                  </motion.a>
+                  </motion.button>
                 )
               }
               

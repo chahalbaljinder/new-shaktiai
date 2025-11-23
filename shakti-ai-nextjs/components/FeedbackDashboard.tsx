@@ -57,17 +57,17 @@ export default function FeedbackDashboard() {
       
       // Transform API data to match component interface
       const transformedData: Feedback[] = data.map((item: any) => ({
-        id: `FB${String(item.id).padStart(3, '0')}`,
-        type: item.type,
-        subject: item.title,
-        description: item.description,
-        status: item.status,
-        priority: item.priority,
-        category: item.category,
-        submittedBy: item.user_name || 'Unknown User',
-        submittedAt: item.created_at,
-        updatedAt: item.updated_at,
-        assignedTo: item.assigned_to_name
+        id: item.id ? `FB${String(item.id).padStart(3, '0')}` : 'FB000',
+        type: item.type || 'feedback',
+        subject: item.title || item.subject || 'No Subject',
+        description: item.description || 'No Description',
+        status: item.status || 'pending',
+        priority: item.priority || 'medium',
+        category: item.category || 'general',
+        submittedBy: item.user_name || item.submittedBy || 'Unknown User',
+        submittedAt: item.created_at || item.submittedAt || new Date().toISOString(),
+        updatedAt: item.updated_at || item.updatedAt || new Date().toISOString(),
+        assignedTo: item.assigned_to_name || item.assignedTo || undefined
       }))
       
       setFeedbacks(transformedData)
@@ -108,9 +108,10 @@ export default function FeedbackDashboard() {
   const filteredFeedbacks = feedbacks.filter(f => {
     const matchesType = filter === 'all' || f.type === filter
     const matchesStatus = statusFilter === 'all' || f.status === statusFilter
-    const matchesSearch = f.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          f.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          f.submittedBy.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = !searchQuery || 
+                          (f.subject || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (f.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (f.submittedBy || '').toLowerCase().includes(searchQuery.toLowerCase())
     return matchesType && matchesStatus && matchesSearch
   })
 

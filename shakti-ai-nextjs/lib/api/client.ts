@@ -74,23 +74,43 @@ class ApiClient {
     return response.json();
   }
 
+  // Helper method to get user_id from localStorage
+  private getUserId(): number {
+    if (typeof window !== 'undefined') {
+      const user = localStorage.getItem('user');
+      if (user) {
+        try {
+          const userData = JSON.parse(user);
+          return userData.id || 3; // Default to 3 if no user ID
+        } catch (e) {
+          return 3;
+        }
+      }
+    }
+    return 3; // Default user ID
+  }
+
   // Wishes Vault methods
   async getWishes(): Promise<{ wishes: Wish[] }> {
-    const url = `${this.baseUrl}/api/wishes`;
-    console.log('Fetching wishes from URL:', url);
+    const userId = this.getUserId();
+    const url = `${this.baseUrl}/api/wishes?user_id=${userId}`;
+    console.log('Fetching wishes from URL:', url, 'for user:', userId);
     const response = await fetch(url);
     console.log('Response status:', response.status, response.statusText);
     if (!response.ok) throw new Error('Failed to fetch wishes');
-    return response.json();
+    const data = await response.json();
+    // API returns an array, wrap it in an object
+    return { wishes: Array.isArray(data) ? data : [] };
   }
 
   async createWish(wish: Omit<Wish, 'id' | 'created_at' | 'updated_at'>): Promise<{ success: boolean; wish_id: number; message: string }> {
+    const userId = this.getUserId();
     const response = await fetch(`${this.baseUrl}/api/wishes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(wish),
+      body: JSON.stringify({ ...wish, user_id: userId }),
     });
     
     if (!response.ok) throw new Error('Failed to create wish');
@@ -170,6 +190,47 @@ class ApiClient {
     if (!response.ok) throw new Error('Failed to convert text to speech');
     return response.blob();
   }
+
+  // Feedback/Grievance methods
+  async getFeedbacks(filters?: any): Promise<any[]> {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.keys(filters).forEach(key => {
+        if (filters[key]) params.append(key, filters[key]);
+      });
+    }
+    const url = `${this.baseUrl}/api/feedback${params.toString() ? '?' + params.toString() : ''}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch feedbacks');
+    return response.json();
+  }
+
+  async submitFeedback(data: any): Promise<{ success: boolean; id: number; message: string }> {
+    const userId = this.getUserId();
+    const response = await fetch(`${this.baseUrl}/api/feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ...data, user_id: userId }),
+    });
+    
+    if (!response.ok) throw new Error('Failed to submit feedback');
+    return response.json();
+  }
+
+  async getFeedbackStats(): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/feedback/stats`);
+    if (!response.ok) throw new Error('Failed to fetch feedback stats');
+    return response.json();
+  }
 }
 
 export const apiClient = new ApiClient();
+
+// Export feedbackAPI for backward compatibility
+export const feedbackAPI = {
+  getAll: (filters?: any) => apiClient.getFeedbacks(filters),
+  submit: (data: any) => apiClient.submitFeedback(data),
+  getStats: () => apiClient.getFeedbackStats(),
+};

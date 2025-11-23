@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
   MessageSquare, 
@@ -17,99 +17,130 @@ import {
   Search,
   Filter,
   Plus,
-  X
+  X,
+  AlertCircle
 } from 'lucide-react'
 import { feedbackAPI } from '@/lib/api'
 
 interface FeedbackItem {
   id: string
-  type: 'feedback' | 'grievance' | 'suggestion'
+  type: 'feedback' | 'complaint' | 'grievance' | 'suggestion'
   title: string
   description: string
   category: string
   status: 'submitted' | 'under-review' | 'in-progress' | 'resolved' | 'closed'
-  priority: 'low' | 'medium' | 'high' | 'critical'
+  priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'
   submittedBy: string
   designation: string
   establishment: string
+  department?: string
   submittedAt: string
   lastUpdated: string
   responseText?: string
+  trackingNumber?: string
+  escalationLevel?: number
+  assignedTo?: string
+  attachments?: string[]
 }
 
 export default function FeedbackModule() {
-  const [activeTab, setActiveTab] = useState<'submit' | 'my-feedback' | 'analytics'>('submit')
+  const [activeTab, setActiveTab] = useState<'submit' | 'my-feedback' | 'complaint-box' | 'analytics'>('submit')
   const [showSubmitForm, setShowSubmitForm] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterType, setFilterType] = useState<'all' | 'feedback' | 'grievance' | 'suggestion'>('all')
+  const [filterType, setFilterType] = useState<'all' | 'feedback' | 'complaint' | 'grievance' | 'suggestion'>('all')
   const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [selectedItem, setSelectedItem] = useState<FeedbackItem | null>(null)
+  const [showTrackingModal, setShowTrackingModal] = useState(false)
+  const [feedbackList, setFeedbackList] = useState<FeedbackItem[]>([])
+  const [loading, setLoading] = useState(false)
+  const [stats, setStats] = useState({
+    totalSubmitted: 0,
+    underReview: 0,
+    inProgress: 0,
+    resolved: 0,
+    avgResponseTime: '0 days',
+    satisfactionRate: 0
+  })
 
   // Form state
   const [formData, setFormData] = useState({
-    type: 'feedback' as 'feedback' | 'grievance' | 'suggestion',
+    type: 'feedback' as 'feedback' | 'complaint' | 'grievance' | 'suggestion',
     title: '',
     description: '',
     category: '',
-    priority: 'medium' as 'low' | 'medium' | 'high' | 'critical',
-    isAnonymous: false
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent' | 'critical',
+    isAnonymous: false,
+    department: '',
+    againstPerson: '',
+    witnesses: ''
   })
 
-  // Sample feedback data
-  const feedbackList: FeedbackItem[] = [
-    {
-      id: 'FD001',
-      type: 'feedback',
-      title: 'APEX System - Excellent Response Quality',
-      description: 'The APEX AI agents provide very accurate and helpful responses for POSH policy queries.',
-      category: 'System Performance',
-      status: 'resolved',
-      priority: 'low',
-      submittedBy: 'Dr. Priya Sharma',
-      designation: 'Scientist-E',
-      establishment: 'DRDO HQ, Delhi',
-      submittedAt: '2025-11-18T10:30:00',
-      lastUpdated: '2025-11-20T14:20:00',
-      responseText: 'Thank you for your positive feedback! We are glad the system is meeting your expectations.'
-    },
-    {
-      id: 'GR001',
-      type: 'grievance',
-      title: 'Voice Input Not Working on Secure Workstations',
-      description: 'Unable to use voice input feature on lab computers due to security restrictions.',
-      category: 'Technical Issue',
-      status: 'in-progress',
-      priority: 'high',
-      submittedBy: 'Dr. Anita Desai',
-      designation: 'Scientist-D',
-      establishment: 'DRDL, Hyderabad',
-      submittedAt: '2025-11-20T09:15:00',
-      lastUpdated: '2025-11-21T16:30:00',
-      responseText: 'IT Security Team is working on enabling voice input for classified networks.'
-    },
-    {
-      id: 'SG001',
-      type: 'suggestion',
-      title: 'Add Support for Regional Languages',
-      description: 'Request to add Hindi and other regional language support for better accessibility.',
-      category: 'Feature Request',
-      status: 'under-review',
-      priority: 'medium',
-      submittedBy: 'Sh. Rajesh Kumar',
-      designation: 'Admin Officer',
-      establishment: 'ADE, Bangalore',
-      submittedAt: '2025-11-21T14:00:00',
-      lastUpdated: '2025-11-22T09:00:00'
+  // Fetch feedback data on component mount
+  useEffect(() => {
+    if (activeTab === 'my-feedback' || activeTab === 'analytics') {
+      fetchFeedbackData()
     }
-  ]
+  }, [activeTab])
 
-  // Statistics
-  const stats = {
-    totalSubmitted: 47,
-    underReview: 12,
-    inProgress: 8,
-    resolved: 23,
-    avgResponseTime: '2.3 days',
-    satisfactionRate: 94
+  const fetchFeedbackData = async () => {
+    try {
+      setLoading(true)
+      const data = await feedbackAPI.getAll({})
+      
+      // Transform API data to match component interface
+      const transformed: FeedbackItem[] = data.map((item: any) => ({
+        id: item.id ? `${item.type === 'complaint' ? 'COMP' : item.type === 'grievance' ? 'GR' : item.type === 'suggestion' ? 'SG' : 'FB'}${String(item.id).padStart(3, '0')}` : 'FB000',
+        type: item.type || 'feedback',
+        title: item.title || item.subject || 'No Subject',
+        description: item.description || 'No Description',
+        category: item.category || 'general',
+        status: item.status || 'submitted',
+        priority: item.priority || 'medium',
+        submittedBy: item.user_name || item.submittedBy || 'Unknown User',
+        designation: item.designation || 'N/A',
+        establishment: item.establishment || 'N/A',
+        department: item.department,
+        submittedAt: item.created_at || item.submittedAt || new Date().toISOString(),
+        lastUpdated: item.updated_at || item.updatedAt || new Date().toISOString(),
+        responseText: item.response_text || item.responseText,
+        trackingNumber: item.tracking_number,
+        escalationLevel: item.escalation_level,
+        assignedTo: item.assigned_to_name || item.assignedTo
+      }))
+      
+      setFeedbackList(transformed)
+      
+      // Calculate stats from actual data
+      setStats({
+        totalSubmitted: transformed.length,
+        underReview: transformed.filter(f => f.status === 'under-review').length,
+        inProgress: transformed.filter(f => f.status === 'in-progress').length,
+        resolved: transformed.filter(f => f.status === 'resolved').length,
+        avgResponseTime: calculateAvgResponseTime(transformed),
+        satisfactionRate: 0 // Calculate based on resolved items
+      })
+      
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching feedback:', error)
+      setLoading(false)
+    }
+  }
+
+  const calculateAvgResponseTime = (items: FeedbackItem[]): string => {
+    const resolvedItems = items.filter(f => f.status === 'resolved')
+    if (resolvedItems.length === 0) return '0 days'
+    
+    let totalDays = 0
+    resolvedItems.forEach(item => {
+      const submitted = new Date(item.submittedAt)
+      const resolved = new Date(item.lastUpdated)
+      const days = Math.floor((resolved.getTime() - submitted.getTime()) / (1000 * 60 * 60 * 24))
+      totalDays += days
+    })
+    
+    const avgDays = Math.round(totalDays / resolvedItems.length)
+    return `${avgDays} day${avgDays !== 1 ? 's' : ''}`
   }
 
   const getStatusColor = (status: string) => {
@@ -136,6 +167,7 @@ export default function FeedbackModule() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'feedback': return <ThumbsUp size={16} />
+      case 'complaint': return <AlertTriangle size={16} />
       case 'grievance': return <AlertTriangle size={16} />
       case 'suggestion': return <FileText size={16} />
       default: return <MessageSquare size={16} />
@@ -146,18 +178,32 @@ export default function FeedbackModule() {
     e.preventDefault()
     
     try {
+      // Build enhanced description for complaints
+      let enhancedDescription = formData.description;
+      if (formData.type === 'complaint') {
+        if (formData.department) enhancedDescription += `\n\nDepartment: ${formData.department}`;
+        if (formData.againstPerson) enhancedDescription += `\nPerson(s) Involved: ${formData.againstPerson}`;
+        if (formData.witnesses) enhancedDescription += `\nWitnesses: ${formData.witnesses}`;
+      }
+      
       // Submit to API - using user_id 3 as demo (DRDO Admin)
-      await feedbackAPI.submit({
+      const response = await feedbackAPI.submit({
         user_id: 3,
         type: formData.type,
         title: formData.title,
-        description: formData.description,
+        description: enhancedDescription,
         category: formData.category,
         priority: formData.priority,
         is_anonymous: formData.isAnonymous
       })
       
-      alert('Feedback submitted successfully!')
+      // Show success message with tracking number for complaints
+      if (formData.type === 'complaint' && response.tracking_number) {
+        alert(`✅ Complaint submitted successfully!\n\n🔢 Your Tracking Number: ${response.tracking_number}\n\n📧 This has been sent to your registered email.\n⏱️ Expected response time: Within 24 hours\n🔒 Your complaint is confidential and will be handled by the ICC.`)
+      } else {
+        alert('✅ ' + (response.message || 'Feedback submitted successfully!'))
+      }
+      
       setShowSubmitForm(false)
       setFormData({
         type: 'feedback',
@@ -165,11 +211,17 @@ export default function FeedbackModule() {
         description: '',
         category: '',
         priority: 'medium',
-        isAnonymous: false
+        isAnonymous: false,
+        department: '',
+        againstPerson: '',
+        witnesses: ''
       })
+      
+      // Refresh feedback list
+      fetchFeedbackData()
     } catch (error) {
       console.error('Error submitting feedback:', error)
-      alert('Failed to submit feedback. Please try again.')
+      alert('❌ Failed to submit. Please try again or contact support.')
     }
   }
 
@@ -206,10 +258,10 @@ export default function FeedbackModule() {
 
       {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2">
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
           <button
             onClick={() => setActiveTab('submit')}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'submit'
                 ? 'bg-brand-500 text-white'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -218,8 +270,18 @@ export default function FeedbackModule() {
             Submit Feedback
           </button>
           <button
+            onClick={() => setActiveTab('complaint-box')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'complaint-box'
+                ? 'bg-red-500 text-white'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            📋 Complaint Box
+          </button>
+          <button
             onClick={() => setActiveTab('my-feedback')}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'my-feedback'
                 ? 'bg-brand-500 text-white'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -229,7 +291,7 @@ export default function FeedbackModule() {
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'analytics'
                 ? 'bg-brand-500 text-white'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -309,6 +371,152 @@ export default function FeedbackModule() {
         </motion.div>
       )}
 
+      {/* Complaint Box Tab */}
+      {activeTab === 'complaint-box' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          {/* Complaint Box Header */}
+          <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-8 text-white">
+            <h2 className="text-3xl font-bold mb-3">📋 Organization Complaint Box</h2>
+            <p className="text-lg opacity-90 mb-4">
+              File confidential complaints about workplace issues, harassment, discrimination, or policy violations
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                <h3 className="font-semibold mb-1">🔒 Confidential</h3>
+                <p className="text-sm opacity-90">Your identity is protected</p>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                <h3 className="font-semibold mb-1">⚡ Fast Response</h3>
+                <p className="text-sm opacity-90">Priority handling within 24hrs</p>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                <h3 className="font-semibold mb-1">👁️ Track Status</h3>
+                <p className="text-sm opacity-90">Monitor your complaint progress</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* File New Complaint */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              onClick={() => {
+                setFormData({ ...formData, type: 'complaint', priority: 'urgent' })
+                setShowSubmitForm(true)
+              }}
+              className="bg-white dark:bg-gray-800 rounded-xl border-2 border-red-300 dark:border-red-700 p-6 cursor-pointer hover:border-red-500 hover:shadow-lg transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 bg-red-100 dark:bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="text-red-500" size={28} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    File a Complaint
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                    Report harassment, discrimination, workplace safety, or any policy violations
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
+                      Harassment
+                    </span>
+                    <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">
+                      Discrimination
+                    </span>
+                    <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">
+                      Safety Issues
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Track Complaint */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              onClick={() => setShowTrackingModal(true)}
+              className="bg-white dark:bg-gray-800 rounded-xl border-2 border-blue-300 dark:border-blue-700 p-6 cursor-pointer hover:border-blue-500 hover:shadow-lg transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Search className="text-blue-500" size={28} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    Track Your Complaint
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                    Enter your tracking number to check the status and updates on your complaint
+                  </p>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Format: <span className="font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">COMP-XXXX-XXXX</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Complaint Categories */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              What can you report?
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { title: 'Workplace Harassment', icon: '⚠️', desc: 'Sexual harassment, bullying, verbal abuse' },
+                { title: 'Discrimination', icon: '🚫', desc: 'Gender, caste, religion, age discrimination' },
+                { title: 'Safety Violations', icon: '🛡️', desc: 'Unsafe working conditions, security issues' },
+                { title: 'Policy Violations', icon: '📋', desc: 'Breach of organizational policies' },
+                { title: 'Ethical Concerns', icon: '⚖️', desc: 'Corruption, fraud, misconduct' },
+                { title: 'Other Issues', icon: '📌', desc: 'Any other workplace concern' }
+              ].map((category, index) => (
+                <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-brand-500 transition-colors">
+                  <div className="text-2xl mb-2">{category.icon}</div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{category.title}</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{category.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Important Information */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-blue-900 dark:text-blue-400 mb-3 flex items-center gap-2">
+              <AlertCircle size={20} />
+              Important Information
+            </h3>
+            <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-300">
+              <li className="flex items-start gap-2">
+                <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+                <span>All complaints are treated with strict confidentiality</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+                <span>You can choose to remain anonymous</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+                <span>Complaints are reviewed by the Internal Complaints Committee (ICC)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+                <span>You will receive a unique tracking number for status updates</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+                <span>False or malicious complaints may result in disciplinary action</span>
+              </li>
+            </ul>
+          </div>
+        </motion.div>
+      )}
+
       {/* My Submissions Tab */}
       {activeTab === 'my-feedback' && (
         <motion.div
@@ -340,6 +548,7 @@ export default function FeedbackModule() {
                 >
                   <option value="all">All Types</option>
                   <option value="feedback">Feedback</option>
+                  <option value="complaint">Complaint</option>
                   <option value="grievance">Grievance</option>
                   <option value="suggestion">Suggestion</option>
                 </select>
@@ -361,8 +570,36 @@ export default function FeedbackModule() {
           </div>
 
           {/* Feedback List */}
-          <div className="space-y-4">
-            {filteredFeedback.map((item) => (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500 mx-auto mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400">Loading your submissions...</p>
+              </div>
+            </div>
+          ) : filteredFeedback.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+              <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                No submissions found
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                {searchQuery || filterType !== 'all' || filterStatus !== 'all' 
+                  ? 'Try adjusting your filters or search query'
+                  : 'You haven\'t submitted any feedback yet'}
+              </p>
+              {!searchQuery && filterType === 'all' && filterStatus === 'all' && (
+                <button
+                  onClick={() => setShowSubmitForm(true)}
+                  className="px-6 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors"
+                >
+                  Submit Your First Feedback
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredFeedback.map((item) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0 }}
@@ -373,7 +610,8 @@ export default function FeedbackModule() {
                   <div className="flex items-start gap-4">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       item.type === 'feedback' ? 'bg-brand-100 text-brand-500' :
-                      item.type === 'grievance' ? 'bg-red-100 text-red-500' :
+                      item.type === 'complaint' ? 'bg-red-100 text-red-600' :
+                      item.type === 'grievance' ? 'bg-orange-100 text-orange-600' :
                       'bg-purple-100 text-purple-500'
                     }`}>
                       {getTypeIcon(item.type)}
@@ -425,7 +663,8 @@ export default function FeedbackModule() {
                 )}
               </motion.div>
             ))}
-          </div>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -436,8 +675,17 @@ export default function FeedbackModule() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500 mx-auto mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400">Loading analytics...</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Submitted</h3>
@@ -496,6 +744,8 @@ export default function FeedbackModule() {
               Chart will be displayed here
             </div>
           </div>
+          </>
+          )}
         </motion.div>
       )}
 
@@ -525,8 +775,8 @@ export default function FeedbackModule() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Type
                 </label>
-                <div className="grid grid-cols-3 gap-4">
-                  {['feedback', 'grievance', 'suggestion'].map((type) => (
+                <div className="grid grid-cols-4 gap-4">
+                  {['feedback', 'complaint', 'grievance', 'suggestion'].map((type) => (
                     <button
                       key={type}
                       type="button"
@@ -585,14 +835,84 @@ export default function FeedbackModule() {
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 >
                   <option value="">Select category</option>
-                  <option value="system-performance">System Performance</option>
-                  <option value="technical-issue">Technical Issue</option>
-                  <option value="feature-request">Feature Request</option>
-                  <option value="user-experience">User Experience</option>
-                  <option value="security">Security</option>
-                  <option value="other">Other</option>
+                  {formData.type === 'complaint' ? (
+                    <>
+                      <option value="harassment">Workplace Harassment</option>
+                      <option value="discrimination">Discrimination</option>
+                      <option value="safety-violation">Safety Violations</option>
+                      <option value="policy-violation">Policy Violations</option>
+                      <option value="ethical-concern">Ethical Concerns</option>
+                      <option value="retaliation">Retaliation</option>
+                      <option value="misconduct">Misconduct</option>
+                      <option value="other">Other</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="system-performance">System Performance</option>
+                      <option value="technical-issue">Technical Issue</option>
+                      <option value="feature-request">Feature Request</option>
+                      <option value="user-experience">User Experience</option>
+                      <option value="security">Security</option>
+                      <option value="other">Other</option>
+                    </>
+                  )}
                 </select>
               </div>
+
+              {/* Complaint-specific fields */}
+              {formData.type === 'complaint' && (
+                <>
+                  {/* Department */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Department/Division
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.department}
+                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                      placeholder="Department where incident occurred"
+                    />
+                  </div>
+
+                  {/* Against Person (Optional) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Person(s) Involved (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.againstPerson}
+                      onChange={(e) => setFormData({ ...formData, againstPerson: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                      placeholder="Name(s) or designation (if applicable)"
+                    />
+                  </div>
+
+                  {/* Witnesses */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Witnesses (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.witnesses}
+                      onChange={(e) => setFormData({ ...formData, witnesses: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                      placeholder="Names of any witnesses"
+                    />
+                  </div>
+
+                  {/* Important Notice for Complaints */}
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <p className="text-sm text-red-800 dark:text-red-300">
+                      <strong>Important:</strong> This complaint will be reviewed by the Internal Complaints Committee (ICC). 
+                      Providing false information may result in disciplinary action. Your complaint will be handled confidentially.
+                    </p>
+                  </div>
+                </>
+              )}
 
               {/* Priority */}
               <div>
@@ -600,7 +920,7 @@ export default function FeedbackModule() {
                   Priority
                 </label>
                 <div className="grid grid-cols-4 gap-4">
-                  {['low', 'medium', 'high', 'critical'].map((priority) => (
+                  {(formData.type === 'complaint' ? ['low', 'medium', 'high', 'urgent'] : ['low', 'medium', 'high', 'critical']).map((priority) => (
                     <button
                       key={priority}
                       type="button"
@@ -652,6 +972,61 @@ export default function FeedbackModule() {
           </motion.div>
         </div>
       )}
+
+      {/* Tracking Modal */}
+      {showTrackingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full"
+          >
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Track Your Complaint
+              </h2>
+              <button
+                onClick={() => setShowTrackingModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Enter Tracking Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="COMP-XXXX-XXXX"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-mono"
+                />
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  💡 You received a tracking number via email when you submitted your complaint. 
+                  Check your registered email or the confirmation screen.
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  alert('Tracking feature will search for your complaint');
+                  setShowTrackingModal(false);
+                }}
+                className="w-full px-6 py-3 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <Search size={20} />
+                Track Status
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
+
