@@ -19,6 +19,7 @@ import {
   Plus,
   X
 } from 'lucide-react'
+import { feedbackAPI } from '@/lib/api'
 
 interface FeedbackItem {
   id: string
@@ -141,19 +142,35 @@ export default function FeedbackModule() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('Submitting feedback:', formData)
-    setShowSubmitForm(false)
-    setFormData({
-      type: 'feedback',
-      title: '',
-      description: '',
-      category: '',
-      priority: 'medium',
-      isAnonymous: false
-    })
+    
+    try {
+      // Submit to API - using user_id 3 as demo (DRDO Admin)
+      await feedbackAPI.submit({
+        user_id: 3,
+        type: formData.type,
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        priority: formData.priority,
+        is_anonymous: formData.isAnonymous
+      })
+      
+      alert('Feedback submitted successfully!')
+      setShowSubmitForm(false)
+      setFormData({
+        type: 'feedback',
+        title: '',
+        description: '',
+        category: '',
+        priority: 'medium',
+        isAnonymous: false
+      })
+    } catch (error) {
+      console.error('Error submitting feedback:', error)
+      alert('Failed to submit feedback. Please try again.')
+    }
   }
 
   const filteredFeedback = feedbackList.filter(item => {

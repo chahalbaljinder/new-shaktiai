@@ -15,6 +15,7 @@ import {
   ArrowDown
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
+import { useState, useEffect } from 'react'
 
 interface DashboardProps {
   userName?: string
@@ -106,6 +107,174 @@ const customerDemographic = [
 
 export default function Dashboard({ userName = 'User' }: DashboardProps) {
   const { setCurrentPage } = useAppStore()
+  const [stats, setStats] = useState<any>(null)
+  const [queries, setQueries] = useState<any[]>([])
+  const [distribution, setDistribution] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch stats
+      const statsRes = await fetch('http://localhost:8000/api/dashboard/stats')
+      if (statsRes.ok) {
+        const statsData = await statsRes.json()
+        setStats(statsData)
+      }
+
+      // Fetch recent queries
+      const queriesRes = await fetch('http://localhost:8000/api/dashboard/recent-queries')
+      if (queriesRes.ok) {
+        const queriesData = await queriesRes.json()
+        setQueries(queriesData)
+      }
+
+      // Fetch personnel distribution
+      const distRes = await fetch('http://localhost:8000/api/dashboard/personnel-distribution')
+      if (distRes.ok) {
+        const distData = await distRes.json()
+        setDistribution(distData)
+      }
+
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+      setLoading(false)
+    }
+  }
+
+  // Use real data if available, fallback to static data
+  const statsData = stats && stats.total_users !== undefined ? [
+    {
+      title: 'DRDO Personnel',
+      value: stats.total_users.toString(),
+      change: '+15.3%',
+      isPositive: true,
+      icon: Users,
+      iconBg: 'bg-[#3C50E0]',
+      iconColor: 'text-white'
+    },
+    {
+      title: 'Policy Queries',
+      value: stats.queries_today.toString(),
+      change: '+23.8%',
+      isPositive: true,
+      icon: FileText,
+      iconBg: 'bg-[#10B981]',
+      iconColor: 'text-white'
+    },
+    {
+      title: 'Active Sessions',
+      value: stats.active_sessions.toString(),
+      change: '+8.7%',
+      isPositive: true,
+      icon: CheckCircle,
+      iconBg: 'bg-[#F59E0B]',
+      iconColor: 'text-white'
+    },
+    {
+      title: 'APEX Agents',
+      value: stats.agents_running.toString(),
+      change: 'All Active',
+      isPositive: true,
+      icon: Clock,
+      iconBg: 'bg-[#EF4444]',
+      iconColor: 'text-white'
+    }
+  ] : [
+    {
+      title: 'DRDO Personnel',
+      value: '1,247',
+      change: '+15.3%',
+      isPositive: true,
+      icon: Users,
+      iconBg: 'bg-[#3C50E0]',
+      iconColor: 'text-white'
+    },
+    {
+      title: 'Policy Queries',
+      value: '8,592',
+      change: '+23.8%',
+      isPositive: true,
+      icon: FileText,
+      iconBg: 'bg-[#10B981]',
+      iconColor: 'text-white'
+    },
+    {
+      title: 'Active Sessions',
+      value: '342',
+      change: '+8.7%',
+      isPositive: true,
+      icon: CheckCircle,
+      iconBg: 'bg-[#F59E0B]',
+      iconColor: 'text-white'
+    },
+    {
+      title: 'APEX Agents',
+      value: '12',
+      change: 'All Active',
+      isPositive: true,
+      icon: Clock,
+      iconBg: 'bg-[#EF4444]',
+      iconColor: 'text-white'
+    }
+  ]
+
+  const recentOrders = queries.length > 0 ? queries : [
+    {
+      id: 'QRY-089',
+      product: 'POSH Policy - Sexual Harassment Guidelines',
+      status: 'Completed',
+      amount: '2m 15s',
+      statusColor: 'text-[#10B981] bg-[#10B981]/10'
+    },
+    {
+      id: 'QRY-088',
+      product: 'Maternity Leave - DRDO Entitlements',
+      status: 'Processing',
+      amount: '1m 42s',
+      statusColor: 'text-[#F59E0B] bg-[#F59E0B]/10'
+    },
+    {
+      id: 'QRY-087',
+      product: 'Annual Performance Review - Scientists',
+      status: 'Completed',
+      amount: '3m 08s',
+      statusColor: 'text-[#10B981] bg-[#10B981]/10'
+    },
+    {
+      id: 'QRY-086',
+      product: 'Grade Pay & Allowances Structure',
+      status: 'Completed',
+      amount: '1m 55s',
+      statusColor: 'text-[#10B981] bg-[#10B981]/10'
+    },
+    {
+      id: 'QRY-085',
+      product: 'Leave Policy - Casual & Medical',
+      status: 'Completed',
+      amount: '2m 30s',
+      statusColor: 'text-[#10B981] bg-[#10B981]/10'
+    }
+  ]
+
+  const customerDemographic = distribution.length > 0 ? distribution : [
+    { country: 'Delhi HQ', customers: 423, percentage: 34, flag: '🏛️' },
+    { country: 'Bangalore Labs', customers: 356, percentage: 29, flag: '🔬' },
+    { country: 'Hyderabad Labs', customers: 287, percentage: 23, flag: '⚙️' },
+    { country: 'Other Establishments', customers: 181, percentage: 14, flag: '📍' }
+  ]
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl text-brand-500 font-semibold">Loading Dashboard...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen">

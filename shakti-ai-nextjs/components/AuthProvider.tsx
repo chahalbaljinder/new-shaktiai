@@ -1,18 +1,22 @@
 'use client'
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface User {
   id: number
   name: string
   email: string
+  designation?: string
+  establishment?: string
+  role?: string
 }
 
 interface AuthContextType {
   user: User | null
   login: (email: string, password: string) => Promise<boolean>
-  register: (name: string, email: string, password: string) => Promise<boolean>
   logout: () => void
   loading: boolean
+  isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -21,21 +25,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  useEffect(() => {
+    // Check if user is already logged in
+    const token = localStorage.getItem('token')
+    const storedUser = localStorage.getItem('user')
+    
+    if (token && storedUser) {
+      try {
+        setUser(JSON.parse(storedUser))
+      } catch (e) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+      }
+    }
+    
+    setLoading(false)
+  }, [])
+
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('http://localhost:8000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
       
+      const data = await response.json()
+      
       if (response.ok) {
-        const data = await response.json()
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
         setUser(data.user)
         return true
       } else {
-        const errorData = await response.json()
-        console.error('Login failed:', errorData)
+        console.error('Login failed:', data.error)
         return false
       }
     } catch (error) {
@@ -44,75 +67,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setUser(data.user)
-        return true
-      } else {
-        const errorData = await response.json()
-        console.error('Registration failed:', errorData)
-        return false
-      }
-    } catch (error) {
-      console.error('Register error:', error)
-      return false
-    }
-  }
-
   const logout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
     setUser(null)
-    fetch('/api/auth/logout', { method: 'POST' })
   }
-
-  useEffect(() => {
-    console.log('AuthProvider: Starting auth check...')
-    
-    // Simple fetch with immediate timeout fallback
-    const checkAuth = () => {
-      console.log('AuthProvider: Making API call to /api/auth/me')
-      
-      fetch('/api/auth/me')
-        .then(res => {
-          console.log('AuthProvider: API response received', res.status)
-          if (res.ok) {
-            return res.json()
-          }
-          throw new Error('API response not ok')
-        })
-        .then(data => {
-          console.log('AuthProvider: Response data:', data)
-          if (data && data.user) {
-            setUser(data.user)
-          }
-        })
-        .catch(error => {
-          console.log('AuthProvider: Auth check failed:', error)
-        })
-        .finally(() => {
-          console.log('AuthProvider: Setting loading to false')
-          setLoading(false)
-        })
-      
-      // Fallback timeout - if API doesn't respond in 2 seconds, stop loading anyway
-      setTimeout(() => {
-        console.log('AuthProvider: Fallback timeout - stopping loading')
-        setLoading(false)
-      }, 2000)
-    }
-    
-    checkAuth()
-  }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      loading,
+      isAuthenticated: !!user 
+    }}>
       {children}
     </AuthContext.Provider>
   )

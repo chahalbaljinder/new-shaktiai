@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/lib/store'
 import { useAuth } from '@/components/AuthProvider'
-import AuthModal from '@/components/AuthModal'
 import Sidebar from '@/components/Sidebar'
 import Dashboard from '@/components/Dashboard'
 import KnowledgeBase from '@/components/KnowledgeBase'
@@ -29,8 +29,29 @@ const pageTransition = {
 }
 
 export default function HomePage() {
+  const router = useRouter()
   const { currentPage, sidebarOpen, emergencyMode } = useAppStore()
   const { user, loading } = useAuth()
+  const [shouldRedirect, setShouldRedirect] = useState(false)
+
+  useEffect(() => {
+    // Wait for loading to complete before redirecting
+    if (!loading) {
+      if (!user) {
+        // Add a small delay to prevent flash of redirect
+        const timer = setTimeout(() => {
+          setShouldRedirect(true)
+        }, 100)
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [loading, user])
+
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.push('/login')
+    }
+  }, [shouldRedirect, router])
 
   // Show loading while checking authentication
   if (loading) {
@@ -41,9 +62,9 @@ export default function HomePage() {
     )
   }
 
-  // Show authentication modal if not logged in
+  // Return null while redirecting
   if (!user) {
-    return <AuthModal />
+    return null
   }
 
   // If emergency mode is active, show only emergency interface
@@ -54,7 +75,7 @@ export default function HomePage() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard userName="Apex" />
+        return <Dashboard userName={user.name} />
       case 'knowledge':
         return <KnowledgeBase />
       case 'wishes':
@@ -68,7 +89,7 @@ export default function HomePage() {
       case 'agents':
         return <AIAgents />
       default:
-        return <Dashboard userName="Apex" />
+        return <Dashboard userName={user.name} />
     }
   }
 

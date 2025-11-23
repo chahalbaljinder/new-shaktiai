@@ -1,445 +1,726 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { 
-  User, 
-  Bell, 
-  Palette, 
-  Shield, 
-  Download, 
-  RotateCcw,
-  Globe,
-  Moon,
-  Sun,
-  Volume2,
-  VolumeX,
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  User,
+  Mail,
   Lock,
-  Key
-} from 'lucide-react'
+  Bell,
+  Shield,
+  Download,
+  Save,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Calendar,
+  Activity,
+} from "lucide-react";
+import { useAuth } from "./AuthProvider";
 
-interface SettingsProps {
-  // Add props as needed
+interface ProfileData {
+  name: string;
+  email: string;
+  designation?: string;
+  establishment?: string;
+  created_at?: string;
 }
 
-export default function Settings({}: SettingsProps) {
-  const [profile, setProfile] = useState({
-    displayName: 'Anjali Sharma',
-    email: 'anjaliisharmaa15@gmail.com',
-    ageRange: '18-25',
-    language: 'english',
-    location: 'New Delhi, India'
-  })
+interface NotificationSettings {
+  expertResponses: boolean;
+  wishReminders: boolean;
+  weeklyCheckins: boolean;
+  communityUpdates: boolean;
+  emergencyAlerts: boolean;
+  voiceConfirmations: boolean;
+}
 
-  const [appearance, setAppearance] = useState({
-    theme: 'auto',
-    colorScheme: 'warm',
-    fontSize: 'medium'
-  })
+interface UserStats {
+  total_wishes: number;
+  total_feedback: number;
+  total_queries: number;
+  member_since: string | null;
+}
 
-  const [notifications, setNotifications] = useState({
+const Settings = () => {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Profile state
+  const [profile, setProfile] = useState<ProfileData>({
+    name: "",
+    email: "",
+    designation: "",
+    establishment: "",
+  });
+
+  // Password change state
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+
+  // Notifications state
+  const [notifications, setNotifications] = useState<NotificationSettings>({
     expertResponses: true,
     wishReminders: true,
     weeklyCheckins: true,
     communityUpdates: false,
     emergencyAlerts: true,
-    voiceConfirmations: true
-  })
+    voiceConfirmations: true,
+  });
 
-  const [privacy, setPrivacy] = useState({
-    autoLockTime: '5',
-    encryptionLevel: 'maximum',
-    dataRetention: '1-year'
-  })
+  // User stats
+  const [stats, setStats] = useState<UserStats>({
+    total_wishes: 0,
+    total_feedback: 0,
+    total_queries: 0,
+    member_since: null,
+  });
 
-  const handleProfileUpdate = (field: string, value: string) => {
-    setProfile(prev => ({ ...prev, [field]: value }))
-  }
+  // Fetch profile data on mount
+  useEffect(() => {
+    if (user?.id) {
+      fetchProfile();
+      fetchNotifications();
+      fetchStats();
+    }
+  }, [user]);
 
-  const handleAppearanceUpdate = (field: string, value: string) => {
-    setAppearance(prev => ({ ...prev, [field]: value }))
-  }
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/settings/profile?user_id=${user?.id || 3}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setProfile({
+          name: data.name || "",
+          email: data.email || "",
+          designation: data.designation || "",
+          establishment: data.establishment || "",
+          created_at: data.created_at,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile:", error);
+    }
+  };
 
-  const handleNotificationToggle = (field: string) => {
-    setNotifications(prev => ({ ...prev, [field]: !prev[field as keyof typeof prev] }))
-  }
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/settings/notifications?user_id=${user?.id || 3}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setNotifications(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  };
 
-  const handlePrivacyUpdate = (field: string, value: string) => {
-    setPrivacy(prev => ({ ...prev, [field]: value }))
-  }
+  const fetchStats = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/settings/stats?user_id=${user?.id || 3}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setStats(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch stats:", error);
+    }
+  };
+
+  const showMessage = (type: "success" | "error", text: string) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
+  const handleProfileUpdate = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:8000/api/settings/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user?.id || 3,
+          name: profile.name,
+          email: profile.email,
+          designation: profile.designation,
+          establishment: profile.establishment,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showMessage("success", "Profile updated successfully!");
+        fetchProfile(); // Refresh data
+      } else {
+        showMessage("error", data.error || "Failed to update profile");
+      }
+    } catch (error) {
+      showMessage("error", "Failed to update profile");
+      console.error("Profile update error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (passwordData.new !== passwordData.confirm) {
+      showMessage("error", "New passwords don't match");
+      return;
+    }
+
+    if (passwordData.new.length < 6) {
+      showMessage("error", "Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:8000/api/settings/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user?.id || 3,
+          current_password: passwordData.current,
+          new_password: passwordData.new,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showMessage("success", "Password changed successfully!");
+        setShowPasswordModal(false);
+        setPasswordData({ current: "", new: "", confirm: "" });
+      } else {
+        showMessage("error", data.error || "Failed to change password");
+      }
+    } catch (error) {
+      showMessage("error", "Failed to change password");
+      console.error("Password change error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNotificationToggle = async (key: keyof NotificationSettings) => {
+    const newSettings = {
+      ...notifications,
+      [key]: !notifications[key],
+    };
+    
+    setNotifications(newSettings);
+
+    try {
+      const response = await fetch("http://localhost:8000/api/settings/notifications", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user?.id || 3,
+          settings: newSettings,
+        }),
+      });
+
+      if (response.ok) {
+        showMessage("success", "Notification settings updated");
+      }
+    } catch (error) {
+      console.error("Failed to update notifications:", error);
+      // Revert on error
+      setNotifications(notifications);
+    }
+  };
+
+  const handleExportData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8000/api/settings/export?user_id=${user?.id || 3}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        // Create download link
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `apex-data-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        showMessage("success", "Data exported successfully!");
+      } else {
+        showMessage("error", "Failed to export data");
+      }
+    } catch (error) {
+      showMessage("error", "Failed to export data");
+      console.error("Export error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const tabs = [
+    { id: "profile", label: "Profile", icon: User },
+    { id: "security", label: "Security", icon: Shield },
+    { id: "notifications", label: "Notifications", icon: Bell },
+    { id: "data", label: "Data & Privacy", icon: Download },
+  ];
 
   return (
-    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
+    <div className="p-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-primary rounded-3xl p-8 text-white"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-bold mb-2">Settings & Preferences</h1>
-            <p className="text-lg opacity-90">Customize your SHAKTI-AI experience</p>
-          </div>
-          <div className="hidden lg:flex items-center space-x-4">
-            <div className="bg-white/20 rounded-full px-4 py-2">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">All settings saved</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Profile Settings */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200"
-        >
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white">
-              <User size={24} />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
-                Display Name
-              </label>
-              <input
-                id="displayName"
-                type="text"
-                value={profile.displayName}
-                onChange={(e) => handleProfileUpdate('displayName', e.target.value)}
-                className="shakti-input"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={profile.email}
-                onChange={(e) => handleProfileUpdate('email', e.target.value)}
-                className="shakti-input"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="ageRange" className="block text-sm font-medium text-gray-700 mb-2">
-                  Age Range
-                </label>
-                <select
-                  id="ageRange"
-                  value={profile.ageRange}
-                  onChange={(e) => handleProfileUpdate('ageRange', e.target.value)}
-                  className="shakti-input"
-                >
-                  <option value="18-25">18-25</option>
-                  <option value="25-30">25-30</option>
-                  <option value="30-35">30-35</option>
-                  <option value="35-45">35-45</option>
-                  <option value="45-55">45-55</option>
-                  <option value="55+">55+</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Language
-                </label>
-                <select
-                  id="language"
-                  value={profile.language}
-                  onChange={(e) => handleProfileUpdate('language', e.target.value)}
-                  className="shakti-input"
-                >
-                  <option value="english">English</option>
-                  <option value="hindi">Hindi</option>
-                  <option value="bengali">Bengali</option>
-                  <option value="tamil">Tamil</option>
-                  <option value="telugu">Telugu</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                Location
-              </label>
-              <input
-                id="location"
-                type="text"
-                value={profile.location}
-                onChange={(e) => handleProfileUpdate('location', e.target.value)}
-                className="shakti-input"
-                placeholder="City, State, Country"
-              />
-            </div>
-
-            <button className="shakti-button w-full">
-              💾 Save Profile
-            </button>
-          </div>
-        </motion.div>
-
-        {/* Appearance Settings */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200"
-        >
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center text-white">
-              <Palette size={24} />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Appearance</h2>
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4">Theme</label>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { value: 'light', label: 'Light', icon: Sun },
-                  { value: 'dark', label: 'Dark', icon: Moon },
-                  { value: 'auto', label: 'Auto', icon: Globe }
-                ].map(({ value, label, icon: Icon }) => (
-                  <button
-                    key={value}
-                    onClick={() => handleAppearanceUpdate('theme', value)}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                      appearance.theme === value
-                        ? 'border-primary-500 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <Icon size={20} className="mx-auto mb-2" />
-                    <span className="text-sm font-medium">{label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="colorScheme" className="block text-sm font-medium text-gray-700 mb-2">
-                Color Scheme
-              </label>
-              <select
-                id="colorScheme"
-                value={appearance.colorScheme}
-                onChange={(e) => handleAppearanceUpdate('colorScheme', e.target.value)}
-                className="shakti-input"
-              >
-                <option value="warm">Warm</option>
-                <option value="cool">Cool</option>
-                <option value="neutral">Neutral</option>
-                <option value="vibrant">Vibrant</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4">Font Size</label>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm">Small</span>
-                <input
-                  type="range"
-                  min="small"
-                  max="large"
-                  value={appearance.fontSize}
-                  onChange={(e) => handleAppearanceUpdate('fontSize', e.target.value)}
-                  className="flex-1"
-                />
-                <span className="text-sm">Large</span>
-              </div>
-              <div className="mt-2 text-center">
-                <span className="text-sm text-gray-500 capitalize">{appearance.fontSize}</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Notifications */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200"
-        >
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white">
-              <Bell size={24} />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Notifications</h2>
-          </div>
-
-          <div className="space-y-4">
-            {[
-              { key: 'expertResponses', label: 'Expert responses', description: 'Get notified when AI experts respond' },
-              { key: 'wishReminders', label: 'Wish reminders', description: 'Periodic reminders about your goals' },
-              { key: 'weeklyCheckins', label: 'Weekly check-ins', description: 'Weekly wellness check-in prompts' },
-              { key: 'communityUpdates', label: 'Community updates', description: 'Updates from the SHAKTI-AI community' },
-              { key: 'emergencyAlerts', label: 'Emergency alerts', description: 'Important safety and emergency notifications' },
-              { key: 'voiceConfirmations', label: 'Voice input confirmations', description: 'Audio feedback for voice interactions' }
-            ].map(({ key, label, description }) => (
-              <div key={key} className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">{label}</div>
-                  <div className="text-sm text-gray-500">{description}</div>
-                </div>
-                <button
-                  onClick={() => handleNotificationToggle(key)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications[key as keyof typeof notifications]
-                      ? 'bg-primary-500'
-                      : 'bg-gray-300'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      notifications[key as keyof typeof notifications]
-                        ? 'translate-x-6'
-                        : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Privacy & Security */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200"
-        >
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center text-white">
-              <Shield size={24} />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Privacy & Security</h2>
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="autoLock" className="block text-sm font-medium text-gray-700 mb-2">
-                Auto-lock Vault
-              </label>
-              <select
-                id="autoLock"
-                value={privacy.autoLockTime}
-                onChange={(e) => handlePrivacyUpdate('autoLockTime', e.target.value)}
-                className="shakti-input"
-              >
-                <option value="1">1 minute</option>
-                <option value="5">5 minutes</option>
-                <option value="15">15 minutes</option>
-                <option value="30">30 minutes</option>
-                <option value="60">1 hour</option>
-                <option value="never">Never</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="encryption" className="block text-sm font-medium text-gray-700 mb-2">
-                Encryption Level
-              </label>
-              <select
-                id="encryption"
-                value={privacy.encryptionLevel}
-                onChange={(e) => handlePrivacyUpdate('encryptionLevel', e.target.value)}
-                className="shakti-input"
-              >
-                <option value="standard">Standard</option>
-                <option value="high">High</option>
-                <option value="maximum">Maximum</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="dataRetention" className="block text-sm font-medium text-gray-700 mb-2">
-                Data Retention
-              </label>
-              <select
-                id="dataRetention"
-                value={privacy.dataRetention}
-                onChange={(e) => handlePrivacyUpdate('dataRetention', e.target.value)}
-                className="shakti-input"
-              >
-                <option value="3-months">3 months</option>
-                <option value="6-months">6 months</option>
-                <option value="1-year">1 year</option>
-                <option value="2-years">2 years</option>
-                <option value="indefinite">Indefinite</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <button className="shakti-button-secondary flex items-center justify-center space-x-2">
-                <Key size={16} />
-                <span>Change Password</span>
-              </button>
-              <button className="shakti-button-secondary flex items-center justify-center space-x-2">
-                <Download size={16} />
-                <span>Export Data</span>
-              </button>
-              <button className="bg-red-50 text-red-700 border-2 border-red-200 rounded-xl px-4 py-3 font-semibold hover:bg-red-100 transition-colors flex items-center justify-center space-x-2">
-                <RotateCcw size={16} />
-                <span>Reset</span>
-              </button>
-            </div>
-          </div>
-        </motion.div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Settings
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Manage your account settings and preferences
+        </p>
       </div>
 
-      {/* Additional Settings */}
+      {/* Success/Error Message */}
+      {message && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          className={`mb-4 p-4 rounded-lg flex items-center gap-3 ${
+            message.type === "success"
+              ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300"
+              : "bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300"
+          }`}
+        >
+          {message.type === "success" ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <XCircle className="w-5 h-5" />
+          )}
+          <span>{message.text}</span>
+        </motion.div>
+      )}
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
+              activeTab === tab.id
+                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            }`}
+          >
+            <tab.icon className="w-4 h-4" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200"
+        key={activeTab}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
       >
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Additional Options</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="p-6 rounded-2xl bg-blue-50 hover:bg-blue-100 transition-colors text-left">
-            <div className="text-2xl mb-2">🔄</div>
-            <div className="font-semibold text-gray-900 mb-1">Sync Data</div>
-            <div className="text-sm text-gray-600">Synchronize across devices</div>
-          </button>
-          
-          <button className="p-6 rounded-2xl bg-green-50 hover:bg-green-100 transition-colors text-left">
-            <div className="text-2xl mb-2">📊</div>
-            <div className="font-semibold text-gray-900 mb-1">Analytics</div>
-            <div className="text-sm text-gray-600">View usage statistics</div>
-          </button>
-          
-          <button className="p-6 rounded-2xl bg-purple-50 hover:bg-purple-100 transition-colors text-left">
-            <div className="text-2xl mb-2">🎯</div>
-            <div className="font-semibold text-gray-900 mb-1">Goals</div>
-            <div className="text-sm text-gray-600">Manage your objectives</div>
-          </button>
-          
-          <button className="p-6 rounded-2xl bg-orange-50 hover:bg-orange-100 transition-colors text-left">
-            <div className="text-2xl mb-2">📱</div>
-            <div className="font-semibold text-gray-900 mb-1">Install App</div>
-            <div className="text-sm text-gray-600">Add to home screen</div>
-          </button>
-        </div>
+        {/* Profile Tab */}
+        {activeTab === "profile" && (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Profile Information
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={profile.name}
+                    onChange={(e) =>
+                      setProfile({ ...profile, name: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={profile.email}
+                    onChange={(e) =>
+                      setProfile({ ...profile, email: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Designation
+                  </label>
+                  <input
+                    type="text"
+                    value={profile.designation || ""}
+                    onChange={(e) =>
+                      setProfile({ ...profile, designation: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Establishment
+                  </label>
+                  <input
+                    type="text"
+                    value={profile.establishment || ""}
+                    onChange={(e) =>
+                      setProfile({ ...profile, establishment: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleProfileUpdate}
+                disabled={loading}
+                className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {loading ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+
+            {/* User Stats */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Activity className="w-5 h-5" />
+                Account Activity
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {stats.total_wishes}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Wishes
+                  </div>
+                </div>
+
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {stats.total_feedback}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Feedback Submitted
+                  </div>
+                </div>
+
+                <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {stats.total_queries}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Knowledge Queries
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <Calendar className="w-4 h-4" />
+                <span>Member since {formatDate(stats.member_since)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Security Tab */}
+        {activeTab === "security" && (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Lock className="w-5 h-5" />
+                Password & Security
+              </h2>
+
+              <button
+                onClick={() => setShowPasswordModal(true)}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Change Password
+              </button>
+
+              <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-amber-800 dark:text-amber-300">
+                  <p className="font-medium mb-1">Security Recommendations</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Use a strong, unique password</li>
+                    <li>Change your password regularly</li>
+                    <li>Never share your password with others</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notifications Tab */}
+        {activeTab === "notifications" && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Notification Preferences
+            </h2>
+
+            <div className="space-y-4">
+              {Object.entries(notifications).map(([key, value]) => (
+                <div
+                  key={key}
+                  className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {key
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/^./, (str) => str.toUpperCase())}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Receive notifications for this activity
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      handleNotificationToggle(key as keyof NotificationSettings)
+                    }
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                      value
+                        ? "bg-blue-600"
+                        : "bg-gray-300 dark:bg-gray-600"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                        value ? "translate-x-6" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Data & Privacy Tab */}
+        {activeTab === "data" && (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Download className="w-5 h-5" />
+                Data Management
+              </h2>
+
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Export all your data including profile, wishes, feedback, and
+                queries in JSON format.
+              </p>
+
+              <button
+                onClick={handleExportData}
+                disabled={loading}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                {loading ? "Exporting..." : "Export My Data"}
+              </button>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Privacy Settings
+              </h2>
+
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  Your data is encrypted and stored securely. We never share your
+                  personal information with third parties without your consent.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </motion.div>
+
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6"
+          >
+            <h3 className="text-xl font-semibold mb-4">Change Password</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.current ? "text" : "password"}
+                    value={passwordData.current}
+                    onChange={(e) =>
+                      setPasswordData({ ...passwordData, current: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPasswords({
+                        ...showPasswords,
+                        current: !showPasswords.current,
+                      })
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    {showPasswords.current ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  New Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.new ? "text" : "password"}
+                    value={passwordData.new}
+                    onChange={(e) =>
+                      setPasswordData({ ...passwordData, new: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPasswords({
+                        ...showPasswords,
+                        new: !showPasswords.new,
+                      })
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    {showPasswords.new ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Confirm New Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.confirm ? "text" : "password"}
+                    value={passwordData.confirm}
+                    onChange={(e) =>
+                      setPasswordData({ ...passwordData, confirm: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPasswords({
+                        ...showPasswords,
+                        confirm: !showPasswords.confirm,
+                      })
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    {showPasswords.confirm ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handlePasswordChange}
+                disabled={loading}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {loading ? "Changing..." : "Change Password"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordData({ current: "", new: "", confirm: "" });
+                }}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
+
+export default Settings;

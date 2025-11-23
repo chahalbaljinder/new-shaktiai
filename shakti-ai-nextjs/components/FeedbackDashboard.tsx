@@ -16,6 +16,7 @@ import {
   Eye,
   MoreVertical
 } from 'lucide-react'
+import { feedbackAPI } from '@/lib/api'
 
 interface Feedback {
   id: string
@@ -37,81 +38,39 @@ export default function FeedbackDashboard() {
   const [filter, setFilter] = useState<'all' | 'feedback' | 'complaint'>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [stats, setStats] = useState<any>(null)
 
   useEffect(() => {
     fetchFeedbacks()
-  }, [])
+    fetchStats()
+  }, [filter, statusFilter, searchQuery])
 
   const fetchFeedbacks = async () => {
     try {
-      // Simulated data - replace with actual API call
-      const mockData: Feedback[] = [
-        {
-          id: 'FB001',
-          type: 'feedback',
-          subject: 'APEX System - Excellent Policy Guidance',
-          description: 'APEX agents provide accurate and detailed policy information for POSH compliance.',
-          status: 'resolved',
-          priority: 'low',
-          category: 'System Performance',
-          submittedBy: 'Dr. Priya Sharma (Scientist-E)',
-          submittedAt: '2025-11-20T10:30:00',
-          updatedAt: '2025-11-21T14:20:00',
-          assignedTo: 'APEX Support Team'
-        },
-        {
-          id: 'GR001',
-          type: 'complaint',
-          subject: 'Voice Input Not Working on Lab Computers',
-          description: 'Voice recording feature fails on secure lab workstations.',
-          status: 'in-progress',
-          priority: 'high',
-          category: 'Technical Issue',
-          submittedBy: 'Dr. Anita Desai (Scientist-D)',
-          submittedAt: '2025-11-21T09:15:00',
-          updatedAt: '2025-11-21T15:30:00',
-          assignedTo: 'IT Security Team'
-        },
-        {
-          id: 'GR002',
-          type: 'complaint',
-          subject: 'SSO Login Issues',
-          description: 'Unable to login through DRDO SSO after recent security update.',
-          status: 'pending',
-          priority: 'urgent',
-          category: 'Authentication',
-          submittedBy: 'Dr. Meera Reddy (Scientist-F)',
-          submittedAt: '2025-11-22T08:00:00',
-          updatedAt: '2025-11-22T08:00:00'
-        },
-        {
-          id: 'FB002',
-          type: 'feedback',
-          subject: 'Improved Knowledge Base Access',
-          description: 'Easy access to all HR policies and regulations. Very helpful for administrative queries.',
-          status: 'resolved',
-          priority: 'low',
-          category: 'User Experience',
-          submittedBy: 'Sh. Rajesh Kumar (Admin Officer)',
-          submittedAt: '2025-11-19T16:45:00',
-          updatedAt: '2025-11-20T10:00:00',
-          assignedTo: 'APEX Admin Team'
-        },
-        {
-          id: 'GR003',
-          type: 'complaint',
-          subject: 'Slow Response During Peak Hours',
-          description: 'APEX agents take longer to respond between 10 AM - 12 PM when most personnel are active.',
-          status: 'in-progress',
-          priority: 'medium',
-          category: 'Performance',
-          submittedBy: 'Dr. Ritu Verma (Scientist-C)',
-          submittedAt: '2025-11-21T11:20:00',
-          updatedAt: '2025-11-21T16:00:00',
-          assignedTo: 'Infrastructure Team'
-        }
-      ]
-      setFeedbacks(mockData)
+      setLoading(true)
+      const filters: any = {}
+      if (filter !== 'all') filters.type = filter
+      if (statusFilter !== 'all') filters.status = statusFilter
+      if (searchQuery) filters.search = searchQuery
+
+      const data = await feedbackAPI.getAll(filters)
+      
+      // Transform API data to match component interface
+      const transformedData: Feedback[] = data.map((item: any) => ({
+        id: `FB${String(item.id).padStart(3, '0')}`,
+        type: item.type,
+        subject: item.title,
+        description: item.description,
+        status: item.status,
+        priority: item.priority,
+        category: item.category,
+        submittedBy: item.user_name || 'Unknown User',
+        submittedAt: item.created_at,
+        updatedAt: item.updated_at,
+        assignedTo: item.assigned_to_name
+      }))
+      
+      setFeedbacks(transformedData)
       setLoading(false)
     } catch (error) {
       console.error('Error fetching feedbacks:', error)
@@ -119,7 +78,24 @@ export default function FeedbackDashboard() {
     }
   }
 
-  const stats = {
+  const fetchStats = async () => {
+    try {
+      const data = await feedbackAPI.getStats()
+      setStats(data)
+    } catch (error) {
+      console.error('Error fetching stats:', error)
+    }
+  }
+
+  const displayStats = stats ? {
+    total: stats.total,
+    feedback: feedbacks.filter(f => f.type === 'feedback').length,
+    complaints: feedbacks.filter(f => f.type === 'complaint').length,
+    pending: stats.under_review || 0,
+    inProgress: stats.in_progress || 0,
+    resolved: stats.resolved || 0,
+    urgent: stats.urgent || 0
+  } : {
     total: feedbacks.length,
     feedback: feedbacks.filter(f => f.type === 'feedback').length,
     complaints: feedbacks.filter(f => f.type === 'complaint').length,
@@ -194,7 +170,7 @@ export default function FeedbackDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Items</p>
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{stats.total}</h3>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{displayStats.total}</h3>
               <div className="flex items-center mt-2 text-sm text-green-600">
                 <ArrowUp size={16} />
                 <span className="ml-1">+8.2% from last week</span>
@@ -215,10 +191,10 @@ export default function FeedbackDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Complaints</p>
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{stats.complaints}</h3>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{displayStats.complaints}</h3>
               <div className="flex items-center mt-2 text-sm text-red-600">
                 <ArrowUp size={16} />
-                <span className="ml-1">{stats.urgent} urgent</span>
+                <span className="ml-1">{displayStats.urgent} urgent</span>
               </div>
             </div>
             <div className="w-12 h-12 bg-red-100 dark:bg-red-500/20 rounded-lg flex items-center justify-center">
@@ -236,7 +212,7 @@ export default function FeedbackDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">In Progress</p>
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{stats.inProgress}</h3>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{displayStats.inProgress}</h3>
               <div className="flex items-center mt-2 text-sm text-blue-600">
                 <Clock size={16} />
                 <span className="ml-1">Being handled</span>
@@ -257,7 +233,7 @@ export default function FeedbackDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Resolved</p>
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{stats.resolved}</h3>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{displayStats.resolved}</h3>
               <div className="flex items-center mt-2 text-sm text-green-600">
                 <CheckCircle size={16} />
                 <span className="ml-1">Successfully closed</span>

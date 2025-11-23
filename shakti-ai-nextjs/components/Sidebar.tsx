@@ -7,12 +7,9 @@ import {
   Brain, 
   Lock, 
   Settings, 
-  Mic, 
   AlertTriangle,
   Menu,
   X,
-  Sun,
-  Moon,
   User,
   LogOut,
   MessageSquare
@@ -36,18 +33,11 @@ export default function Sidebar() {
     setCurrentPage, 
     sidebarOpen, 
     setSidebarOpen, 
-    voiceActive, 
-    setVoiceActive, 
     emergencyMode, 
     setEmergencyMode 
   } = useAppStore()
   
   const { user, logout } = useAuth()
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light')
-  }
 
   return (
     <>
@@ -64,13 +54,9 @@ export default function Sidebar() {
         initial={false}
         animate={{ x: sidebarOpen ? 0 : -280 }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed left-0 top-0 h-screen min-h-screen w-70 bg-[#1C2434] border-r border-[#2E3A47] shadow-xl z-50 lg:relative lg:translate-x-0 lg:h-screen"
-        style={{
-          height: '100vh',
-          minHeight: '100vh'
-        }}
+        className="fixed left-0 top-0 h-screen w-70 bg-[#1C2434] border-r border-[#2E3A47] shadow-xl z-50 lg:relative lg:translate-x-0 overflow-y-auto"
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col min-h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[#2E3A47]">
             <div className="flex items-center space-x-3">
@@ -119,7 +105,13 @@ export default function Sidebar() {
                   key={item.id}
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setCurrentPage(item.id)}
+                  onClick={() => {
+                    setCurrentPage(item.id)
+                    // Auto-close sidebar on mobile after selection
+                    if (window.innerWidth < 1024) {
+                      setSidebarOpen(false)
+                    }
+                  }}
                   className={cn(
                     'w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left group',
                     isActive
@@ -142,24 +134,6 @@ export default function Sidebar() {
 
           {/* Bottom Actions */}
           <div className="p-4 border-t border-[#2E3A47] space-y-3">
-            {/* Voice Input */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setVoiceActive(!voiceActive)}
-              className={cn(
-                'w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200',
-                voiceActive
-                  ? 'bg-emerald-500 text-white animate-pulse'
-                  : 'bg-[#2E3A47] text-emerald-400 hover:bg-emerald-500 hover:text-white'
-              )}
-            >
-              <Mic size={20} />
-              <span className="font-medium">
-                {voiceActive ? 'Listening...' : 'Voice Input'}
-              </span>
-            </motion.button>
-
             {/* Emergency */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -170,17 +144,6 @@ export default function Sidebar() {
               <AlertTriangle size={20} />
               <span className="font-medium">Emergency</span>
             </motion.button>
-
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-[#2E3A47] hover:text-white transition-all duration-200"
-            >
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-              <span className="font-medium">
-                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-              </span>
-            </button>
 
             {/* User Profile */}
             <div className="space-y-2">
