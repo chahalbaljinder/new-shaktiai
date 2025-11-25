@@ -638,6 +638,39 @@ def submit_feedback():
         cursor.close()
         conn.close()
 
+@app.route('/api/feedback/track/<tracking_number>', methods=['GET'])
+def track_complaint(tracking_number):
+    """Track complaint by tracking number"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                id, user_id, type, title, description, category, 
+                priority, status, is_anonymous, assigned_to, 
+                response_text, created_at, updated_at, resolved_at
+            FROM feedback 
+            WHERE title LIKE %s OR description LIKE %s
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (f'%{tracking_number}%', f'%{tracking_number}%'))
+        
+        complaint = cursor.fetchone()
+        
+        if not complaint:
+            return jsonify({'error': 'Complaint not found with this tracking number'}), 404
+        
+        return jsonify({
+            'success': True,
+            'complaint': dict(complaint)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 @app.route('/api/feedback/stats', methods=['GET'])
 def feedback_stats():
     """Get feedback statistics"""
@@ -668,6 +701,69 @@ def feedback_stats():
             'urgent': stats['urgent']
         })
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/feedback/<feedback_id>', methods=['PUT'])
+def update_feedback(feedback_id):
+    """Update feedback/complaint status"""
+    data = request.json
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Strip any prefix (FB, SG, GR, CP, etc.) and leading zeros
+        import re
+        numeric_id = re.sub(r'^[A-Z]+', '', feedback_id).lstrip('0') or '0'
+        
+        print(f"Original ID: {feedback_id}, Numeric ID: {numeric_id}")
+        print(f"Update data: {data}")
+        
+        update_fields = []
+        params = []
+        
+        if 'status' in data:
+            update_fields.append("status = %s")
+            params.append(data['status'])
+        
+        if 'assigned_to' in data:
+            update_fields.append("assigned_to = %s")
+            params.append(data['assigned_to'])
+        
+        if 'response_text' in data:
+            update_fields.append("response_text = %s")
+            params.append(data['response_text'])
+        
+        if data.get('status') == 'resolved':
+            update_fields.append("resolved_at = CURRENT_TIMESTAMP")
+        
+        update_fields.append("updated_at = CURRENT_TIMESTAMP")
+        
+        params.append(int(numeric_id))
+        
+        if not update_fields:
+            return jsonify({'error': 'No fields to update'}), 400
+        
+        query = f"UPDATE feedback SET {', '.join(update_fields)} WHERE id = %s"
+        print(f"Executing query: {query}")
+        print(f"With params: {params}")
+        
+        cursor.execute(query, params)
+        
+        if cursor.rowcount == 0:
+            return jsonify({'error': 'Feedback not found'}), 404
+        
+        conn.commit()
+        
+        print(f"Successfully updated feedback ID {numeric_id}")
+        return jsonify({'success': True, 'message': 'Feedback updated successfully'})
+    except Exception as e:
+        conn.rollback()
+        print(f"Error updating feedback: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()

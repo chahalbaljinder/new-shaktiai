@@ -18,7 +18,8 @@ import {
   Filter,
   Plus,
   X,
-  AlertCircle
+  AlertCircle,
+  Eye
 } from 'lucide-react'
 import { feedbackAPI } from '@/lib/api'
 
@@ -51,8 +52,12 @@ export default function FeedbackModule() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [selectedItem, setSelectedItem] = useState<FeedbackItem | null>(null)
   const [showTrackingModal, setShowTrackingModal] = useState(false)
+  const [trackingNumber, setTrackingNumber] = useState('')
+  const [trackingResult, setTrackingResult] = useState<FeedbackItem | null>(null)
+  const [trackingError, setTrackingError] = useState('')
   const [feedbackList, setFeedbackList] = useState<FeedbackItem[]>([])
   const [loading, setLoading] = useState(false)
+  const [trackingLoading, setTrackingLoading] = useState(false)
   const [stats, setStats] = useState({
     totalSubmitted: 0,
     underReview: 0,
@@ -607,8 +612,8 @@ export default function FeedbackModule() {
                 className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       item.type === 'feedback' ? 'bg-brand-100 text-brand-500' :
                       item.type === 'complaint' ? 'bg-red-100 text-red-600' :
                       item.type === 'grievance' ? 'bg-orange-100 text-orange-600' :
@@ -616,14 +621,14 @@ export default function FeedbackModule() {
                     }`}>
                       {getTypeIcon(item.type)}
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                         {item.title}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                         {item.description}
                       </p>
-                      <div className="flex items-center gap-4 mt-3">
+                      <div className="flex items-center gap-4 mt-3 flex-wrap">
                         <span className="text-xs text-gray-500">
                           ID: {item.id}
                         </span>
@@ -636,13 +641,22 @@ export default function FeedbackModule() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(item.status)}`}>
-                      {item.status.replace('-', ' ').toUpperCase()}
-                    </span>
-                    <span className={`inline-flex px-2 py-1 rounded text-xs font-medium ${getPriorityColor(item.priority)}`}>
-                      {item.priority.toUpperCase()}
-                    </span>
+                  <div className="flex items-start gap-3">
+                    <div className="flex flex-col items-end gap-2">
+                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(item.status)}`}>
+                        {item.status.replace('-', ' ').toUpperCase()}
+                      </span>
+                      <span className={`inline-flex px-2 py-1 rounded text-xs font-medium ${getPriorityColor(item.priority)}`}>
+                        {item.priority.toUpperCase()}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedItem(item)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      title="View Details"
+                    >
+                      <Eye className="text-brand-500" size={20} />
+                    </button>
                   </div>
                 </div>
 
@@ -1000,27 +1014,206 @@ export default function FeedbackModule() {
                 </label>
                 <input
                   type="text"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
                   placeholder="COMP-XXXX-XXXX"
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-mono"
                 />
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <p className="text-sm text-blue-800 dark:text-blue-300">
-                  💡 You received a tracking number via email when you submitted your complaint. 
-                  Check your registered email or the confirmation screen.
-                </p>
-              </div>
+              {trackingError && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <p className="text-sm text-red-800 dark:text-red-300">
+                    ❌ {trackingError}
+                  </p>
+                </div>
+              )}
+
+              {trackingResult && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 space-y-2">
+                  <h3 className="font-semibold text-green-900 dark:text-green-300">Complaint Found!</h3>
+                  <div className="text-sm text-green-800 dark:text-green-300 space-y-1">
+                    <p><strong>Title:</strong> {trackingResult.title}</p>
+                    <p><strong>Status:</strong> <span className="capitalize">{trackingResult.status.replace('-', ' ')}</span></p>
+                    <p><strong>Priority:</strong> <span className="capitalize">{trackingResult.priority}</span></p>
+                    <p><strong>Category:</strong> {trackingResult.category}</p>
+                    <p><strong>Submitted:</strong> {new Date(trackingResult.submittedAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              )}
+
+              {!trackingResult && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <p className="text-sm text-blue-800 dark:text-blue-300">
+                    💡 You received a tracking number via email when you submitted your complaint. 
+                    Check your registered email or the confirmation screen.
+                  </p>
+                </div>
+              )}
 
               <button
-                onClick={() => {
-                  alert('Tracking feature will search for your complaint');
-                  setShowTrackingModal(false);
+                onClick={async () => {
+                  if (!trackingNumber.trim()) {
+                    setTrackingError('Please enter a tracking number');
+                    return;
+                  }
+                  setTrackingLoading(true);
+                  setTrackingError('');
+                  setTrackingResult(null);
+                  try {
+                    const response = await fetch(`http://localhost:8000/api/feedback/track/${trackingNumber}`);
+                    const data = await response.json();
+                    if (data.success) {
+                      setTrackingResult(data.complaint);
+                    } else {
+                      setTrackingError(data.error || 'Complaint not found');
+                    }
+                  } catch (error) {
+                    setTrackingError('Failed to track complaint. Please try again.');
+                  } finally {
+                    setTrackingLoading(false);
+                  }
                 }}
-                className="w-full px-6 py-3 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors flex items-center justify-center gap-2"
+                disabled={trackingLoading}
+                className="w-full px-6 py-3 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Search size={20} />
-                Track Status
+                {trackingLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                    Searching...
+                  </>
+                ) : (
+                  <>
+                    <Search size={20} />
+                    Track Status
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* View Details Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full my-auto"
+          >
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {selectedItem.type === 'complaint' ? 'Complaint' : 
+                   selectedItem.type === 'grievance' ? 'Grievance' :
+                   selectedItem.type === 'suggestion' ? 'Suggestion' : 'Feedback'} Details
+                </h2>
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  ID
+                </label>
+                <p className="text-gray-900 dark:text-white font-mono">{selectedItem.id}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Title
+                </label>
+                <p className="text-gray-900 dark:text-white font-semibold">{selectedItem.title}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Description
+                </label>
+                <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{selectedItem.description}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Type
+                  </label>
+                  <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                    selectedItem.type === 'complaint' 
+                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      : selectedItem.type === 'grievance'
+                      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                      : selectedItem.type === 'suggestion'
+                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                  }`}>
+                    {selectedItem.type.toUpperCase()}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Priority
+                  </label>
+                  <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(selectedItem.priority)}`}>
+                    {selectedItem.priority.toUpperCase()}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Status
+                  </label>
+                  <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(selectedItem.status)}`}>
+                    {selectedItem.status.replace('-', ' ').toUpperCase()}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Category
+                  </label>
+                  <p className="text-gray-900 dark:text-white">{selectedItem.category}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Submitted At
+                </label>
+                <p className="text-gray-900 dark:text-white">{new Date(selectedItem.submittedAt).toLocaleString()}</p>
+              </div>
+
+              {selectedItem.responseText && (
+                <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="text-green-500 mt-0.5" size={16} />
+                    <div>
+                      <p className="text-sm font-medium text-green-800 dark:text-green-400 mb-1">
+                        Response from APEX Team:
+                      </p>
+                      <p className="text-sm text-green-700 dark:text-green-300">
+                        {selectedItem.responseText}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Close
               </button>
             </div>
           </motion.div>

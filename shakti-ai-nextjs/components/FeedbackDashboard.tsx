@@ -39,6 +39,13 @@ export default function FeedbackDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [stats, setStats] = useState<any>(null)
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null)
+  const [showViewModal, setShowViewModal] = useState(false)
+  const [showActionsMenu, setShowActionsMenu] = useState<string | null>(null)
+  const [showStatusModal, setShowStatusModal] = useState(false)
+  const [newStatus, setNewStatus] = useState('')
+  const [responseText, setResponseText] = useState('')
+  const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
     fetchFeedbacks()
@@ -367,12 +374,30 @@ export default function FeedbackDashboard() {
                     {new Date(feedback.submittedAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-brand-500 hover:text-brand-700 dark:hover:text-brand-400 mr-3">
-                      <Eye size={18} />
-                    </button>
-                    <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                      <MoreVertical size={18} />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button 
+                        onClick={() => {
+                          setSelectedFeedback(feedback)
+                          setShowViewModal(true)
+                        }}
+                        className="text-brand-500 hover:text-brand-700 dark:hover:text-brand-400"
+                        title="View Details"
+                      >
+                        <Eye size={18} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedFeedback(feedback)
+                          setNewStatus(feedback.status)
+                          setResponseText('')
+                          setShowStatusModal(true)
+                        }}
+                        className="px-3 py-1 bg-brand-500 text-white rounded hover:bg-brand-600 transition-colors text-xs font-medium"
+                        title="Update Status"
+                      >
+                        Update Status
+                      </button>
+                    </div>
                   </td>
                 </motion.tr>
               ))}
@@ -390,6 +415,296 @@ export default function FeedbackDashboard() {
           </div>
         )}
       </div>
+
+      {/* View Details Modal */}
+      {showViewModal && selectedFeedback && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full my-auto"
+          >
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {selectedFeedback.type === 'complaint' ? 'Complaint' : 'Feedback'} Details
+                </h2>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  ID
+                </label>
+                <p className="text-gray-900 dark:text-white font-mono">{selectedFeedback.id}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Subject
+                </label>
+                <p className="text-gray-900 dark:text-white font-semibold">{selectedFeedback.subject}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Description
+                </label>
+                <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{selectedFeedback.description}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Type
+                  </label>
+                  <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                    selectedFeedback.type === 'complaint' 
+                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                  }`}>
+                    {selectedFeedback.type.toUpperCase()}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Priority
+                  </label>
+                  <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                    selectedFeedback.priority === 'urgent' || selectedFeedback.priority === 'high'
+                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      : selectedFeedback.priority === 'medium'
+                      ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                  }`}>
+                    {selectedFeedback.priority.toUpperCase()}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Status
+                  </label>
+                  <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${
+                    selectedFeedback.status === 'resolved'
+                      ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                      : selectedFeedback.status === 'in-progress'
+                      ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
+                      : 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
+                  }`}>
+                    {selectedFeedback.status.replace('-', ' ').toUpperCase()}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Category
+                  </label>
+                  <p className="text-gray-900 dark:text-white">{selectedFeedback.category}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Submitted By
+                </label>
+                <p className="text-gray-900 dark:text-white">{selectedFeedback.submittedBy}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Submitted At
+                  </label>
+                  <p className="text-gray-900 dark:text-white">{new Date(selectedFeedback.submittedAt).toLocaleString()}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Last Updated
+                  </label>
+                  <p className="text-gray-900 dark:text-white">{new Date(selectedFeedback.updatedAt).toLocaleString()}</p>
+                </div>
+              </div>
+
+              {selectedFeedback.assignedTo && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Assigned To
+                  </label>
+                  <p className="text-gray-900 dark:text-white">{selectedFeedback.assignedTo}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+              <button
+                onClick={() => setShowViewModal(false)}
+                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Update Status Modal */}
+      {showStatusModal && selectedFeedback && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full my-auto"
+          >
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Update Status
+                </h2>
+                <button
+                  onClick={() => setShowStatusModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Feedback ID
+                </label>
+                <p className="text-gray-900 dark:text-white font-mono">{selectedFeedback.id}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Subject
+                </label>
+                <p className="text-gray-900 dark:text-white">{selectedFeedback.subject}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current Status
+                </label>
+                <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${
+                  selectedFeedback.status === 'resolved'
+                    ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                    : selectedFeedback.status === 'in-progress'
+                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
+                    : 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
+                }`}>
+                  {selectedFeedback.status.replace('-', ' ').toUpperCase()}
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  New Status *
+                </label>
+                <select
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="under-review">Under Review</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Response / Comments (Optional)
+                </label>
+                <textarea
+                  value={responseText}
+                  onChange={(e) => setResponseText(e.target.value)}
+                  rows={4}
+                  placeholder="Add your response or comments here..."
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={() => setShowStatusModal(false)}
+                disabled={updating}
+                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setUpdating(true)
+                  try {
+                    const feedbackId = selectedFeedback.id.replace('FB', '').replace(/^0+/, '')
+                    const response = await fetch(`http://localhost:8000/api/feedback/${feedbackId}`, {
+                      method: 'PUT',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        status: newStatus,
+                        response_text: responseText || undefined
+                      })
+                    })
+                    
+                    if (response.ok) {
+                      // Update the local state immediately
+                      setFeedbacks(prevFeedbacks => 
+                        prevFeedbacks.map(f => 
+                          f.id === selectedFeedback.id 
+                            ? { ...f, status: newStatus as any }
+                            : f
+                        )
+                      )
+                      setShowStatusModal(false)
+                      setSelectedFeedback(null)
+                      // Also refresh from server to get any other updates
+                      fetchFeedbacks()
+                      alert('Status updated successfully!')
+                    } else {
+                      const errorData = await response.json()
+                      alert(`Failed to update status: ${errorData.error || 'Unknown error'}`)
+                    }
+                  } catch (error) {
+                    console.error('Error updating status:', error)
+                    alert('Failed to update status')
+                  } finally {
+                    setUpdating(false)
+                  }
+                }}
+                disabled={updating || !newStatus}
+                className="px-6 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {updating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                    Updating...
+                  </>
+                ) : (
+                  'Update Status'
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
