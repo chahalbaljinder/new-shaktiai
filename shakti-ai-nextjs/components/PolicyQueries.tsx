@@ -446,7 +446,22 @@ export default function PolicyQueries() {
                       className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{q.query}</h4>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">{q.query}</h4>
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                            q.category === 'posh' ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' :
+                            q.category === 'leave' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
+                            q.category === 'maternity' ? 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300' :
+                            q.category === 'transfer' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                            'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                          }`}>
+                            {q.category === 'posh' ? 'POSH Act' :
+                             q.category === 'leave' ? 'Leave Policies' :
+                             q.category === 'maternity' ? 'Maternity Benefits' :
+                             q.category === 'transfer' ? 'Transfer Guidelines' :
+                             'General Policies'}
+                          </span>
+                        </div>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           q.status === 'completed'
                             ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
@@ -462,7 +477,6 @@ export default function PolicyQueries() {
                           <Clock size={14} />
                           {q.responseTime}
                         </span>
-                        <span>{q.category}</span>
                         <span>{new Date(q.createdAt).toLocaleString()}</span>
                       </div>
                       {q.response && (
