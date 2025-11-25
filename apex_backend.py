@@ -1905,6 +1905,190 @@ def reset_user_password(user_id):
         cursor.close()
         conn.close()
 
+# ==================== POLICY QUERIES (APEX RAG) ====================
+
+@app.route('/api/policy-queries', methods=['GET', 'POST'])
+def handle_policy_queries():
+    """Handle policy queries with APEX RAG system"""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Authorization required'}), 401
+    
+    token = auth_header.split(' ')[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = payload['user_id']
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token expired'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Invalid token'}), 401
+    
+    if request.method == 'GET':
+        # Get query history
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("""
+                SELECT id, query, category, response, status, response_time, created_at
+                FROM policy_queries
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                LIMIT 50
+            """, (user_id,))
+            
+            queries = cursor.fetchall()
+            
+            # Format queries with proper datetime serialization
+            formatted_queries = []
+            for q in queries:
+                query_dict = dict(q)
+                # Ensure created_at is ISO formatted
+                if query_dict.get('created_at'):
+                    query_dict['created_at'] = query_dict['created_at'].isoformat()
+                formatted_queries.append(query_dict)
+            
+            return jsonify({
+                'queries': formatted_queries
+            })
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+        finally:
+            cursor.close()
+            conn.close()
+    
+    elif request.method == 'POST':
+        # Submit new query
+        data = request.json
+        query = data.get('query', '').strip()
+        category = data.get('category', 'general')
+        
+        if not query:
+            return jsonify({'error': 'Query is required'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # Import APEX system
+            try:
+                from core.apex_crew import ask_apex
+                apex_available = True
+                print("✅ APEX module imported successfully")
+            except ImportError as import_err:
+                apex_available = False
+                print(f"❌ APEX import failed: {import_err}")
+            
+            # Get APEX response
+            start_time = datetime.now()
+            
+            if apex_available:
+                # Map category to agent types
+                agent_mapping = {
+                    'posh': ['athena'],
+                    'leave': ['athena'],
+                    'maternity': ['athena'],
+                    'transfer': ['athena'],
+                    'general': ['athena']
+                }
+                agents = agent_mapping.get(category, ['athena'])
+                
+                try:
+                    print(f"🤖 Calling APEX with agents: {agents}")
+                    print(f"📝 Query: {query[:100]}...")
+                    response_text = ask_apex(query, agents)
+                    print(f"✅ APEX response received: {len(response_text)} chars")
+                    status = 'completed'
+                except Exception as e:
+                    print(f"❌ Error calling APEX: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    response_text = f"I apologize, but I encountered an error processing your query: {str(e)}"
+                    status = 'completed'
+            else:
+                response_text = "APEX AI system is currently unavailable. Please try again later."
+                status = 'pending'
+            
+            end_time = datetime.now()
+            response_time = f"{(end_time - start_time).total_seconds():.2f}s"
+            
+            # Store query in database
+            cursor.execute("""
+                INSERT INTO policy_queries 
+                (user_id, query, category, response, status, response_time, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                RETURNING id, query, category, response, status, response_time, created_at
+            """, (user_id, query, category, response_text, status, response_time))
+            
+            query_record = cursor.fetchone()
+            conn.commit()
+            
+            # Format the response with proper datetime
+            result = dict(query_record)
+            if result.get('created_at'):
+                result['created_at'] = result['created_at'].isoformat()
+            
+            return jsonify({
+                'message': 'Query processed successfully',
+                'query': result
+            })
+            
+        except Exception as e:
+            conn.rollback()
+            print(f"Error processing policy query: {e}")
+            return jsonify({'error': str(e)}), 500
+        finally:
+            cursor.close()
+            conn.close()
+
+@app.route('/api/generate-application', methods=['POST'])
+def generate_application_endpoint():
+    """Generate application using APEX Scribe agent"""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Authorization required'}), 401
+    
+    token = auth_header.split(' ')[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = payload['user_id']
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token expired'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Invalid token'}), 401
+    
+    data = request.json
+    application_type = data.get('applicationType', '').strip()
+    details = data.get('details', '').strip()
+    
+    if not application_type or not details:
+        return jsonify({'error': 'Application type and details are required'}), 400
+    
+    try:
+        # Import APEX system
+        from core.apex_crew import generate_application
+        print("✅ APEX Scribe module imported successfully")
+        
+        # Generate application
+        print(f"📝 Generating application: {application_type}")
+        application_text = generate_application(application_type, details)
+        print(f"✅ Application generated: {len(application_text)} chars")
+        
+        return jsonify({
+            'message': 'Application generated successfully',
+            'application': application_text
+        })
+        
+    except ImportError as import_err:
+        print(f"❌ APEX import failed: {import_err}")
+        return jsonify({'error': 'APEX system not available'}), 503
+    except Exception as e:
+        print(f"❌ Error generating application: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     print("🚀 Starting APEX API Backend...")
     print("📊 Database: Connected")

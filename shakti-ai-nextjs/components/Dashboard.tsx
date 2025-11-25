@@ -19,6 +19,7 @@ import { useState, useEffect } from 'react'
 
 interface DashboardProps {
   userName?: string
+  onNavigate?: (page: string) => void
 }
 
 const statsData = [
@@ -105,7 +106,7 @@ const customerDemographic = [
   { country: 'Other Establishments', customers: 181, percentage: 14, flag: '📍' }
 ]
 
-export default function Dashboard({ userName = 'User' }: DashboardProps) {
+export default function Dashboard({ userName = 'User', onNavigate }: DashboardProps) {
   const { setCurrentPage } = useAppStore()
   const [stats, setStats] = useState<any>(null)
   const [queries, setQueries] = useState<any[]>([])
@@ -344,7 +345,10 @@ export default function Dashboard({ userName = 'User' }: DashboardProps) {
                 <h2 className="text-lg font-bold text-[#1C2434] dark:text-white">
                   Recent Policy Queries
                 </h2>
-                <button className="text-sm text-[#3C50E0] hover:underline font-medium">
+                <button 
+                  onClick={() => onNavigate?.('policy-queries')}
+                  className="text-sm text-[#3C50E0] hover:underline font-medium"
+                >
                   View all queries
                 </button>
               </div>

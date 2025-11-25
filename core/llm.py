@@ -94,3 +94,7 @@ class GeminiLLM(LLM):
             "temperature": self.temperature,
             "max_tokens": self.max_tokens
         }
+
+def get_llm():
+    """Get a configured LLM instance."""
+    return GeminiLLM()

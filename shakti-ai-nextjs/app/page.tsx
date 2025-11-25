@@ -16,6 +16,7 @@ import AIAgents from '@/components/AIAgents'
 import FeedbackDashboard from '@/components/FeedbackDashboard'
 import FeedbackModule from '@/components/FeedbackModule'
 import OnboardingFlow from '@/components/OnboardingFlow'
+import PolicyQueries from '@/components/PolicyQueries'
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -108,7 +109,7 @@ export default function HomePage() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard userName={user.name} />
+        return <Dashboard userName={user.name} onNavigate={(page) => useAppStore.getState().setCurrentPage(page)} />
       case 'knowledge':
         return <KnowledgeBase />
       case 'wishes':
@@ -117,12 +118,14 @@ export default function HomePage() {
         return <FeedbackModule />
       case 'feedback':
         return <FeedbackDashboard />
+      case 'policy-queries':
+        return <PolicyQueries />
       case 'settings':
         return <ComprehensiveSettings />
       case 'agents':
         return <AIAgents />
       default:
-        return <Dashboard userName={user.name} />
+        return <Dashboard userName={user.name} onNavigate={(page) => useAppStore.getState().setCurrentPage(page)} />
     }
   }
 

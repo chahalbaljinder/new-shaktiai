@@ -13,7 +13,8 @@ import {
   User,
   LogOut,
   MessageSquare,
-  Shield
+  Shield,
+  FileText
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/lib/store'
@@ -24,6 +25,7 @@ const getNavigation = (userRole?: string) => {
   const baseNav = [
     { id: 'dashboard', name: 'Dashboard', icon: Home, emoji: '🏠' },
     { id: 'knowledge', name: 'Knowledge Base', icon: Brain, emoji: '🧠' },
+    { id: 'policy-queries', name: 'Policy Queries', icon: FileText, emoji: '📋' },
     { id: 'wishes', name: 'Wishes Vault', icon: Lock, emoji: '🔐' },
     { id: 'feedback-module', name: 'Submit Feedback', icon: MessageSquare, emoji: '✍️' },
     { id: 'feedback', name: 'Grievance Dashboard', icon: AlertTriangle, emoji: '📊' },
